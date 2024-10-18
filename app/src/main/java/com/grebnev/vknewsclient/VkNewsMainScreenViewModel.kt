@@ -7,21 +7,42 @@ import com.grebnev.vknewsclient.domain.FeedPost
 import com.grebnev.vknewsclient.domain.StatisticItem
 
 class VkNewsMainScreenViewModel : ViewModel() {
-    private val _feedPost = MutableLiveData(FeedPost())
-    val feedPost: LiveData<FeedPost> = _feedPost
+    private val initialFeedPostList = mutableListOf<FeedPost>().apply {
+        repeat(500) {
+            add(
+                FeedPost(it)
+            )
+        }
+    }
 
-    fun updateCount(item: StatisticItem) {
-        val oldStatistics = feedPost.value?.statisticsList
-            ?: throw IllegalStateException("Value from feedPost is null")
-        val newStatistics = oldStatistics.toMutableList().apply {
-            replaceAll { oldItem ->
-                if (item.type == oldItem.type) {
-                    oldItem.copy(count = oldItem.count + 1)
+    private val _feedPostList = MutableLiveData<List<FeedPost>>(initialFeedPostList)
+    val feedPostList: LiveData<List<FeedPost>> = _feedPostList
+
+    fun updateCount(feedPost: FeedPost, item: StatisticItem) {
+        _feedPostList.value = feedPostList.value?.toMutableList()?.apply {
+            replaceAll { oldFeedPost ->
+                if (oldFeedPost == feedPost) {
+                    val oldStatistics = oldFeedPost.statisticsList
+                    val newStatistics = oldStatistics.toMutableList().apply {
+                        replaceAll { oldItem ->
+                            if (item.type == oldItem.type) {
+                                oldItem.copy(count = oldItem.count + 1)
+                            } else {
+                                oldItem
+                            }
+                        }
+                    }
+                    oldFeedPost.copy(statisticsList = newStatistics)
                 } else {
-                    oldItem
+                    oldFeedPost
                 }
             }
-        }
-        _feedPost.value = feedPost.value?.copy(statisticsList = newStatistics)
+        } ?: throw IllegalStateException("feedPostList is null")
+    }
+
+    fun delete(feedPost: FeedPost) {
+        val modifiedFeedPostList = _feedPostList.value?.toMutableList() ?: mutableListOf()
+        modifiedFeedPostList.remove(feedPost)
+        _feedPostList.value = modifiedFeedPostList
     }
 }
