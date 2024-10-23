@@ -51,6 +51,8 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.viewmodel.compose)
+    implementation(libs.google.gson)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
