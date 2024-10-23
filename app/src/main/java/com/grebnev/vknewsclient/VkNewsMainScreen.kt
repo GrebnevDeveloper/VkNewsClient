@@ -1,40 +1,62 @@
 package com.grebnev.vknewsclient
 
 import androidx.compose.foundation.clickable
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.grebnev.vknewsclient.domain.FeedPost
 import com.grebnev.vknewsclient.navigation.AppNavGraph
 import com.grebnev.vknewsclient.navigation.NavigationState
 import com.grebnev.vknewsclient.navigation.rememberNavigationState
 
 
 @Composable
-fun VkNewsMainScreen(
-    viewModel: VkNewsMainScreenViewModel
-) {
+fun VkNewsMainScreen() {
     val navigationState = rememberNavigationState()
 
+    val commentsToPost: MutableState<FeedPost?> = remember {
+        mutableStateOf(null)
+    }
+
+
     Scaffold(
-        topBar = { TopBar() },
         bottomBar = { NavigationBottomBar(navigationState) },
         content = { paddingValues ->
             AppNavGraph(
                 navHostController = navigationState.navHostController,
-                homeScreenContent = {
-                    HomeScreen(viewModel = viewModel, paddingValues = paddingValues)
+                newsFeedScreenContent = {
+                    HomeScreen(
+                        paddingValues = paddingValues,
+                        onCommentClickListener = {
+                            navigationState.navigateToComments(it)
+                        }
+                    )
+                },
+                commentsScreenContent = { feedPost ->
+                    CommentsScreen(
+                        feedPost = feedPost,
+                        onBackPressed = {
+                            navigationState.navHostController.popBackStack()
+                        }
+                    )
                 },
                 favouriteScreenContent = {
                     TextCounter("Favourite")
@@ -53,28 +75,25 @@ private fun TextCounter(name: String) {
         mutableIntStateOf(0)
     }
 
-    Text(modifier = Modifier.clickable { count++ },
-        text = "$name count: $count"
-    )
-}
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            modifier = Modifier.clickable { count++ },
+            text = "$name count: $count"
+        )
+    }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun TopBar() {
-    TopAppBar(
-        title = {
-            Text(text = "VkNews")
-        }
-    )
 }
 
 @Composable
 private fun NavigationBottomBar(
     navigationState: NavigationState
-    ) {
+) {
 
     val navBackStackEntry by navigationState.navHostController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
 
     NavigationBar {
         val items = listOf(
@@ -83,9 +102,17 @@ private fun NavigationBottomBar(
             NavigationItem.Profile
         )
         items.forEach() { item ->
+            val selected = navBackStackEntry?.destination?.hierarchy?.any() {
+                it.route == item.screen.route
+            } ?: false
+
             NavigationBarItem(
-                selected = currentRoute == item.screen.route,
-                onClick = { navigationState.navigateTo(item.screen.route) },
+                selected = selected,
+                onClick = {
+                    if (!selected) {
+                        navigationState.navigateTo(item.screen.route)
+                    }
+                },
                 icon = {
                     Icon(imageVector = item.icon, contentDescription = null)
                 },

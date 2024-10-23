@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import com.grebnev.vknewsclient.domain.FeedPost
 import com.grebnev.vknewsclient.domain.StatisticItem
 
-class VkNewsMainScreenViewModel : ViewModel() {
+class NewsFeedViewModel : ViewModel() {
     private val initialFeedPostList = mutableListOf<FeedPost>().apply {
         repeat(500) {
             add(
@@ -15,11 +15,17 @@ class VkNewsMainScreenViewModel : ViewModel() {
         }
     }
 
-    private val _feedPostList = MutableLiveData<List<FeedPost>>(initialFeedPostList)
-    val feedPostList: LiveData<List<FeedPost>> = _feedPostList
+    private val initialState = NewsFeedScreenState.Posts(initialFeedPostList)
+
+    private val _screenState = MutableLiveData<NewsFeedScreenState>(initialState)
+    val screenState: LiveData<NewsFeedScreenState> = _screenState
+
 
     fun updateCount(feedPost: FeedPost, item: StatisticItem) {
-        _feedPostList.value = feedPostList.value?.toMutableList()?.apply {
+        val currentState = screenState.value
+        if (currentState !is NewsFeedScreenState.Posts) return
+
+        val newFeedPosts = currentState.posts.toMutableList().apply {
             replaceAll { oldFeedPost ->
                 if (oldFeedPost == feedPost) {
                     val oldStatistics = oldFeedPost.statisticsList
@@ -37,12 +43,16 @@ class VkNewsMainScreenViewModel : ViewModel() {
                     oldFeedPost
                 }
             }
-        } ?: throw IllegalStateException("feedPostList is null")
+        }
+        _screenState.value = NewsFeedScreenState.Posts(newFeedPosts)
     }
 
     fun delete(feedPost: FeedPost) {
-        val modifiedFeedPostList = _feedPostList.value?.toMutableList() ?: mutableListOf()
+        val currentState = screenState.value
+        if (currentState !is NewsFeedScreenState.Posts) return
+
+        val modifiedFeedPostList = currentState.posts.toMutableList()
         modifiedFeedPostList.remove(feedPost)
-        _feedPostList.value = modifiedFeedPostList
+        _screenState.value = NewsFeedScreenState.Posts(posts = modifiedFeedPostList)
     }
 }
