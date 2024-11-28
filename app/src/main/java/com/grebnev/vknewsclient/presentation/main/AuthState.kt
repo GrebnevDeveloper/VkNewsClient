@@ -1,4 +1,4 @@
-package com.grebnev.vknewsclient
+package com.grebnev.vknewsclient.presentation.main
 
 sealed class AuthState {
     data object Authorized: AuthState()

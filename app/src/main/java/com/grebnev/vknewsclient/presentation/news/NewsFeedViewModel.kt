@@ -1,4 +1,4 @@
-package com.grebnev.vknewsclient
+package com.grebnev.vknewsclient.presentation.news
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

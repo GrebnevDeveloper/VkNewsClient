@@ -1,4 +1,4 @@
-package com.grebnev.vknewsclient
+package com.grebnev.vknewsclient.presentation.main
 
 import androidx.lifecycle.ViewModel
 import com.vk.id.VKID

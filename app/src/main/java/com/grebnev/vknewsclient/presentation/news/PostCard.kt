@@ -1,4 +1,4 @@
-package com.grebnev.vknewsclient
+package com.grebnev.vknewsclient.presentation.news
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -25,6 +25,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.grebnev.vknewsclient.R
 import com.grebnev.vknewsclient.domain.FeedPost
 import com.grebnev.vknewsclient.domain.StatisticItem
 import com.grebnev.vknewsclient.domain.StatisticType
