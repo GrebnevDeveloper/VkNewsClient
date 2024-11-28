@@ -1,10 +1,11 @@
-package com.grebnev.vknewsclient
+package com.grebnev.vknewsclient.presentation.main
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.grebnev.vknewsclient.R
 import com.grebnev.vknewsclient.navigation.Screen
 
 sealed class NavigationItem(

@@ -1,4 +1,4 @@
-package com.grebnev.vknewsclient
+package com.grebnev.vknewsclient.presentation.main
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

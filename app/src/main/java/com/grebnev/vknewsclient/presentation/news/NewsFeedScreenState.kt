@@ -1,4 +1,4 @@
-package com.grebnev.vknewsclient
+package com.grebnev.vknewsclient.presentation.news
 
 import com.grebnev.vknewsclient.domain.FeedPost
 

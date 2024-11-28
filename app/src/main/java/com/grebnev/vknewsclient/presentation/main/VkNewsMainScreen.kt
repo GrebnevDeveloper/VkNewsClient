@@ -1,4 +1,4 @@
-package com.grebnev.vknewsclient
+package com.grebnev.vknewsclient.presentation.main
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,6 +26,8 @@ import com.grebnev.vknewsclient.domain.FeedPost
 import com.grebnev.vknewsclient.navigation.AppNavGraph
 import com.grebnev.vknewsclient.navigation.NavigationState
 import com.grebnev.vknewsclient.navigation.rememberNavigationState
+import com.grebnev.vknewsclient.presentation.comments.CommentsScreen
+import com.grebnev.vknewsclient.presentation.news.NewsFeedScreen
 
 
 @Composable
@@ -43,7 +45,7 @@ fun VkNewsMainScreen() {
             AppNavGraph(
                 navHostController = navigationState.navHostController,
                 newsFeedScreenContent = {
-                    HomeScreen(
+                    NewsFeedScreen(
                         paddingValues = paddingValues,
                         onCommentClickListener = {
                             navigationState.navigateToComments(it)

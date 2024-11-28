@@ -1,8 +1,9 @@
-package com.grebnev.vknewsclient
+package com.grebnev.vknewsclient.presentation.comments
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.grebnev.vknewsclient.R
 import com.grebnev.vknewsclient.domain.FeedPost
 import com.grebnev.vknewsclient.domain.PostComment
 
