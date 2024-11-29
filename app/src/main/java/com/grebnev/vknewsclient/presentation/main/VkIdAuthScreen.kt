@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.grebnev.vknewsclient.R
 import com.vk.id.AccessToken
 import com.vk.id.VKIDAuthFail
+import com.vk.id.auth.VKIDAuthUiParams
 import com.vk.id.onetap.common.OneTapOAuth
 import com.vk.id.onetap.compose.onetap.OneTap
 
@@ -48,6 +49,9 @@ fun VkIdAuthScreen(
                 },
                 onFail = { oAuth: OneTapOAuth?, fail: VKIDAuthFail ->
                     onFailureAuth(oAuth, fail)
+                },
+                authParams = VKIDAuthUiParams {
+                    scopes = setOf("wall", "friends")
                 }
             )
         }
