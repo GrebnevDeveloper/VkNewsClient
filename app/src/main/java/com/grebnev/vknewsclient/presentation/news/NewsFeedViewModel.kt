@@ -3,23 +3,35 @@ package com.grebnev.vknewsclient.presentation.news
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.grebnev.vknewsclient.data.mapper.NewsFeedMapper
+import com.grebnev.vknewsclient.data.network.ApiFactory
 import com.grebnev.vknewsclient.domain.FeedPost
 import com.grebnev.vknewsclient.domain.StatisticItem
+import com.vk.id.VKID
+import kotlinx.coroutines.launch
 
 class NewsFeedViewModel : ViewModel() {
-    private val initialFeedPostList = mutableListOf<FeedPost>().apply {
-        repeat(500) {
-            add(
-                FeedPost(it)
-            )
-        }
-    }
 
-    private val initialState = NewsFeedScreenState.Posts(initialFeedPostList)
+    private val initialState = NewsFeedScreenState.Initial
 
     private val _screenState = MutableLiveData<NewsFeedScreenState>(initialState)
     val screenState: LiveData<NewsFeedScreenState> = _screenState
 
+    private val mapper = NewsFeedMapper()
+
+    init {
+        loadRecommendations()
+    }
+
+    private fun loadRecommendations() {
+        viewModelScope.launch {
+            val token = VKID.instance.accessToken?.token ?: return@launch
+            val response = ApiFactory.apiService.loadRecommendations(token)
+            val feedPosts = mapper.mapResponseToFeedPost(response)
+            _screenState.value = NewsFeedScreenState.Posts(feedPosts)
+        }
+    }
 
     fun updateCount(feedPost: FeedPost, item: StatisticItem) {
         val currentState = screenState.value
