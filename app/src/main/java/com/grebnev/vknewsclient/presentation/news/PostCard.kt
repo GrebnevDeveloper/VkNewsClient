@@ -63,7 +63,7 @@ fun PostCard(
                 onSharesClickListener,
                 onCommentsClickListener,
                 onLikesClickListener,
-                feedPost.isFavorite
+                feedPost.isLiked
             )
         }
     }
