@@ -4,11 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.grebnev.vknewsclient.data.mapper.NewsFeedMapper
-import com.grebnev.vknewsclient.data.network.ApiFactory
+import com.grebnev.vknewsclient.data.repository.NewsFeedRepository
 import com.grebnev.vknewsclient.domain.FeedPost
 import com.grebnev.vknewsclient.domain.StatisticItem
-import com.vk.id.VKID
 import kotlinx.coroutines.launch
 
 class NewsFeedViewModel : ViewModel() {
@@ -18,7 +16,7 @@ class NewsFeedViewModel : ViewModel() {
     private val _screenState = MutableLiveData<NewsFeedScreenState>(initialState)
     val screenState: LiveData<NewsFeedScreenState> = _screenState
 
-    private val mapper = NewsFeedMapper()
+    private val repository = NewsFeedRepository()
 
     init {
         loadRecommendations()
@@ -26,10 +24,15 @@ class NewsFeedViewModel : ViewModel() {
 
     private fun loadRecommendations() {
         viewModelScope.launch {
-            val token = VKID.instance.accessToken?.token ?: return@launch
-            val response = ApiFactory.apiService.loadRecommendations(token)
-            val feedPosts = mapper.mapResponseToFeedPost(response)
+            val feedPosts = repository.loadRecommendations()
             _screenState.value = NewsFeedScreenState.Posts(feedPosts)
+        }
+    }
+
+    fun changeLikeStatus(feedPost: FeedPost) {
+        viewModelScope.launch {
+            repository.changeLikeStatus(feedPost)
+            _screenState.value = NewsFeedScreenState.Posts(repository.feedPosts)
         }
     }
 
