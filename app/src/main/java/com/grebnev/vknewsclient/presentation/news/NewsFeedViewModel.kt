@@ -19,6 +19,7 @@ class NewsFeedViewModel : ViewModel() {
     private val repository = NewsFeedRepository()
 
     init {
+        _screenState.value = NewsFeedScreenState.Loading
         loadRecommendations()
     }
 
@@ -71,11 +72,9 @@ class NewsFeedViewModel : ViewModel() {
     }
 
     fun delete(feedPost: FeedPost) {
-        val currentState = screenState.value
-        if (currentState !is NewsFeedScreenState.Posts) return
-
-        val modifiedFeedPostList = currentState.posts.toMutableList()
-        modifiedFeedPostList.remove(feedPost)
-        _screenState.value = NewsFeedScreenState.Posts(posts = modifiedFeedPostList)
+        viewModelScope.launch {
+            repository.deletePost(feedPost)
+            _screenState.value = NewsFeedScreenState.Posts(repository.feedPosts)
+        }
     }
 }
