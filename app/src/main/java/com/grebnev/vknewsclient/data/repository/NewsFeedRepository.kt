@@ -12,6 +12,8 @@ class NewsFeedRepository {
     private val apiService = ApiFactory.apiService
     private val mapper = NewsFeedMapper()
 
+    private var nextFrom: String? = null
+
     private val _feedPosts = mutableListOf<FeedPost>()
     val feedPosts: List<FeedPost>
         get() = _feedPosts.toList()
@@ -22,10 +24,21 @@ class NewsFeedRepository {
     }
 
     suspend fun loadRecommendations(): List<FeedPost> {
-        val response = apiService.loadRecommendations(getAccessToken())
+        val startFrom = nextFrom
+
+        if (startFrom == null && feedPosts.isNotEmpty()) return feedPosts
+
+        val response = if (startFrom == null) {
+            apiService.loadRecommendations(getAccessToken())
+        } else {
+            apiService.loadRecommendations(getAccessToken(), startFrom)
+        }
+
+        nextFrom = response.newsFeedContent.nextFrom
+
         val posts = mapper.mapResponseToFeedPost(response)
         _feedPosts.addAll(posts)
-        return posts
+        return feedPosts
     }
 
     suspend fun changeLikeStatus(feedPost: FeedPost) {
