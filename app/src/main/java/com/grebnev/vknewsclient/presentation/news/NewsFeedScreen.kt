@@ -103,6 +103,7 @@ private fun FeedPosts(
                     if (nextDataIsLoading) {
                         Box(
                             modifier = Modifier
+                                .padding(bottom = 100.dp)
                                 .fillMaxWidth()
                                 .wrapContentHeight(),
                             contentAlignment = Alignment.Center
