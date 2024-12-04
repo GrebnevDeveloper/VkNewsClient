@@ -1,7 +1,9 @@
 package com.grebnev.vknewsclient.data.mapper
 
+import com.grebnev.vknewsclient.data.model.CommentsResponseDto
 import com.grebnev.vknewsclient.data.model.NewsFeedResponseDto
 import com.grebnev.vknewsclient.domain.FeedPost
+import com.grebnev.vknewsclient.domain.PostComment
 import com.grebnev.vknewsclient.domain.StatisticItem
 import com.grebnev.vknewsclient.domain.StatisticType
 import java.text.SimpleDateFormat
@@ -22,7 +24,7 @@ class NewsFeedMapper {
                 id = post.id,
                 communityId = post.communityId,
                 communityName = group.name,
-                publicationDate = mapTimestampToDate(post.date * 1000),
+                publicationDate = mapTimestampToDate(post.date),
                 communityImageUrl = group.imageUrl,
                 contentText = post.text,
                 contentImageUrl = post.attachments?.firstOrNull()?.photo?.photoUrls?.lastOrNull()?.photoUrl,
@@ -40,8 +42,30 @@ class NewsFeedMapper {
         return result
     }
 
+    fun mapResponseToPostComment(response: CommentsResponseDto): List<PostComment> {
+        val result = mutableListOf<PostComment>()
+
+        val comments = response.commentsContent.comments
+        val profiles = response.commentsContent.profiles
+
+        for (comment in comments) {
+            if (comment.text.isBlank()) continue
+            val author = profiles.firstOrNull { it.id == comment.authorId } ?: continue
+            val postComment = PostComment(
+                id = comment.id,
+                authorAvatarUrl = author.authorAvatarUrl,
+                authorName = "${author.firstName} ${author.lastName}",
+                commentText = comment.text,
+                publicationDate = mapTimestampToDate(comment.date)
+            )
+            result.add(postComment)
+        }
+
+        return result
+    }
+
     private fun mapTimestampToDate(timestamp: Long): String {
-        val date = Date(timestamp)
+        val date = Date(timestamp * 1000)
         return SimpleDateFormat("d MMMM yyyy, hh:mm", Locale.getDefault()).format(date)
     }
 }

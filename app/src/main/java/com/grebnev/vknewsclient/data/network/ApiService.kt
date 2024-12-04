@@ -1,5 +1,6 @@
 package com.grebnev.vknewsclient.data.network
 
+import com.grebnev.vknewsclient.data.model.CommentsResponseDto
 import com.grebnev.vknewsclient.data.model.LikesCountResponseDto
 import com.grebnev.vknewsclient.data.model.NewsFeedResponseDto
 import retrofit2.http.GET
@@ -22,20 +23,27 @@ interface ApiService {
     suspend fun addLike(
         @Query("access_token") token: String,
         @Query("owner_id") ownerId: Long,
-        @Query("item_id") postId: Long,
+        @Query("item_id") postId: Long
     ): LikesCountResponseDto
 
     @GET("likes.delete?v=5.199&type=post")
     suspend fun deleteLike(
         @Query("access_token") token: String,
         @Query("owner_id") ownerId: Long,
-        @Query("item_id") postId: Long,
+        @Query("item_id") postId: Long
     ): LikesCountResponseDto
 
     @GET("newsfeed.ignoreItem?v=5.199&type=wall")
     suspend fun ignoreFeedPost(
         @Query("access_token") token: String,
         @Query("owner_id") ownerId: Long,
-        @Query("item_id") postId: Long,
+        @Query("item_id") postId: Long
     )
+
+    @GET("wall.getComments?v=5.199&extended=1&fields=photo_100")
+    suspend fun loadComments(
+        @Query("access_token") token: String,
+        @Query("owner_id") ownerId: Long,
+        @Query("post_id") postId: Long
+    ): CommentsResponseDto
 }
