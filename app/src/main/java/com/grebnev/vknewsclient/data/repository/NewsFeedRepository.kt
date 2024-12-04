@@ -3,6 +3,7 @@ package com.grebnev.vknewsclient.data.repository
 import com.grebnev.vknewsclient.data.mapper.NewsFeedMapper
 import com.grebnev.vknewsclient.data.network.ApiFactory
 import com.grebnev.vknewsclient.domain.FeedPost
+import com.grebnev.vknewsclient.domain.PostComment
 import com.grebnev.vknewsclient.domain.StatisticItem
 import com.grebnev.vknewsclient.domain.StatisticType
 import com.vk.id.VKID
@@ -48,6 +49,16 @@ class NewsFeedRepository {
             postId = feedPost.id
         )
         _feedPosts.remove(feedPost)
+    }
+
+    suspend fun loadComments(feedPost: FeedPost): List<PostComment> {
+        val response = apiService.loadComments(
+            token = getAccessToken(),
+            ownerId = feedPost.communityId,
+            postId = feedPost.id
+        )
+        val postComments = mapper.mapResponseToPostComment(response)
+        return postComments
     }
 
     suspend fun changeLikeStatus(feedPost: FeedPost) {
