@@ -22,7 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.grebnev.vknewsclient.domain.FeedPost
+import com.grebnev.vknewsclient.domain.entity.FeedPost
 import com.grebnev.vknewsclient.navigation.AppNavGraph
 import com.grebnev.vknewsclient.navigation.NavigationState
 import com.grebnev.vknewsclient.navigation.rememberNavigationState
