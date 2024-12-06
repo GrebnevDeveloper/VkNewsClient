@@ -1,6 +1,6 @@
 package com.grebnev.vknewsclient.presentation.news
 
-import com.grebnev.vknewsclient.domain.FeedPost
+import com.grebnev.vknewsclient.domain.entity.FeedPost
 
 sealed class NewsFeedScreenState {
     data object Initial : NewsFeedScreenState()

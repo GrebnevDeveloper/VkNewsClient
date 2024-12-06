@@ -2,10 +2,10 @@ package com.grebnev.vknewsclient.data.mapper
 
 import com.grebnev.vknewsclient.data.model.CommentsResponseDto
 import com.grebnev.vknewsclient.data.model.NewsFeedResponseDto
-import com.grebnev.vknewsclient.domain.FeedPost
-import com.grebnev.vknewsclient.domain.PostComment
-import com.grebnev.vknewsclient.domain.StatisticItem
-import com.grebnev.vknewsclient.domain.StatisticType
+import com.grebnev.vknewsclient.domain.entity.FeedPost
+import com.grebnev.vknewsclient.domain.entity.PostComment
+import com.grebnev.vknewsclient.domain.entity.StatisticItem
+import com.grebnev.vknewsclient.domain.entity.StatisticType
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale

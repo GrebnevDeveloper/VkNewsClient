@@ -1,4 +1,4 @@
-package com.grebnev.vknewsclient.domain
+package com.grebnev.vknewsclient.domain.entity
 
 data class StatisticItem(
     val type: StatisticType,
