@@ -1,54 +1,57 @@
 package com.grebnev.vknewsclient.presentation.news
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grebnev.vknewsclient.data.repository.NewsFeedRepository
 import com.grebnev.vknewsclient.domain.FeedPost
-import com.grebnev.vknewsclient.domain.StatisticItem
+import com.grebnev.vknewsclient.extensions.mergeWith
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 
 class NewsFeedViewModel : ViewModel() {
 
-    private val initialState = NewsFeedScreenState.Initial
-
-    private val _screenState = MutableLiveData<NewsFeedScreenState>(initialState)
-    val screenState: LiveData<NewsFeedScreenState> = _screenState
+    private val exceptionHandler = CoroutineExceptionHandler { _, _ ->
+        Log.d("NewsFeedViewModel", "Coroutine exception handler was called")
+    }
 
     private val repository = NewsFeedRepository()
 
-    init {
-        _screenState.value = NewsFeedScreenState.Loading
-        loadRecommendations()
-    }
+    private val recommendationsFlow = repository.recommendations
 
-    private fun loadRecommendations() {
+    private val loadNextDataFlow = MutableSharedFlow<NewsFeedScreenState>()
+
+    val screenState = recommendationsFlow
+        .filter { it.isNotEmpty() }
+        .map { NewsFeedScreenState.Posts(posts = it) as NewsFeedScreenState }
+        .onStart { emit(NewsFeedScreenState.Loading) }
+        .mergeWith(loadNextDataFlow)
+
+    fun loadNextRecommendations() {
         viewModelScope.launch {
-            val feedPosts = repository.loadRecommendations()
-            _screenState.value = NewsFeedScreenState.Posts(feedPosts)
+            loadNextDataFlow.emit(
+                NewsFeedScreenState.Posts(
+                    posts = recommendationsFlow.value,
+                    nextDataLoading = true
+                )
+            )
+            repository.loadNextData()
         }
     }
 
-    fun loadNextRecommendations() {
-        _screenState.value = NewsFeedScreenState.Posts(
-            posts = repository.feedPosts,
-            nextDataLoading = true
-        )
-        loadRecommendations()
-    }
-
     fun changeLikeStatus(feedPost: FeedPost) {
-        viewModelScope.launch {
+        viewModelScope.launch(exceptionHandler) {
             repository.changeLikeStatus(feedPost)
-            _screenState.value = NewsFeedScreenState.Posts(repository.feedPosts)
         }
     }
 
     fun delete(feedPost: FeedPost) {
-        viewModelScope.launch {
+        viewModelScope.launch(exceptionHandler) {
             repository.deletePost(feedPost)
-            _screenState.value = NewsFeedScreenState.Posts(repository.feedPosts)
         }
     }
 }
