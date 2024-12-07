@@ -1,17 +1,15 @@
 package com.grebnev.vknewsclient.presentation.comments
 
 import androidx.lifecycle.ViewModel
-import com.grebnev.vknewsclient.data.repository.NewsFeedRepositoryImpl
 import com.grebnev.vknewsclient.domain.entity.FeedPost
 import com.grebnev.vknewsclient.domain.usecases.GetCommentsUseCase
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
 
-class CommentsViewModel(
-    feedPost: FeedPost
+class CommentsViewModel @Inject constructor(
+    feedPost: FeedPost,
+    private val getCommentsUseCase: GetCommentsUseCase
 ) : ViewModel() {
-
-    private val repository = NewsFeedRepositoryImpl()
-    private val getCommentsUseCase = GetCommentsUseCase(repository)
 
     val screenState = getCommentsUseCase(feedPost)
         .map {
@@ -20,5 +18,4 @@ class CommentsViewModel(
                 comments = it
             )
         }
-
 }
