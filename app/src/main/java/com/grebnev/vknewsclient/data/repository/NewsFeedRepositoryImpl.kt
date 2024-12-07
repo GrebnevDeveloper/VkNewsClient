@@ -1,7 +1,7 @@
 package com.grebnev.vknewsclient.data.repository
 
 import com.grebnev.vknewsclient.data.mapper.NewsFeedMapper
-import com.grebnev.vknewsclient.data.network.ApiFactory
+import com.grebnev.vknewsclient.data.network.ApiService
 import com.grebnev.vknewsclient.domain.entity.FeedPost
 import com.grebnev.vknewsclient.domain.entity.PostComment
 import com.grebnev.vknewsclient.domain.entity.StatisticItem
@@ -18,8 +18,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.stateIn
+import javax.inject.Inject
 
-class NewsFeedRepositoryImpl : NewsFeedRepository {
+class NewsFeedRepositoryImpl @Inject constructor(
+    private val apiService: ApiService,
+    private val mapper: NewsFeedMapper
+) : NewsFeedRepository {
 
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
 
@@ -51,9 +55,6 @@ class NewsFeedRepositoryImpl : NewsFeedRepository {
         delay(RETRY_TIMEOUT)
         true
     }
-
-    private val apiService = ApiFactory.apiService
-    private val mapper = NewsFeedMapper()
 
     private val _feedPosts = mutableListOf<FeedPost>()
     private val feedPosts: List<FeedPost>

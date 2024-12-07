@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.vkid.placeholders)
+    alias(libs.plugins.kotlin.kapt)
 }
 
 android {
@@ -42,6 +43,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.dagger2)
+    kapt(libs.dagger2.compiler)
     implementation(platform(libs.okhttp3.bom))
     implementation(libs.okhttp3)
     implementation(libs.okhttp3.log)
