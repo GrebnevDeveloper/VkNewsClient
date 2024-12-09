@@ -1,6 +1,7 @@
 package com.grebnev.vknewsclient.presentation.main
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -21,22 +22,39 @@ class MainActivity : ComponentActivity() {
             VkNewsClientTheme {
                 when (authState.value) {
                     is AuthState.Authorized -> {
+                        Log.d(
+                            "AuthState",
+                            "Auth success, token: ${
+                                (authState.value as AuthState.Authorized)
+                                    .accessToken
+                                    .token
+                            }"
+                        )
                         VkNewsMainScreen()
                     }
 
                     is AuthState.NotAuthorized -> {
+                        Log.d(
+                            "AuthState",
+                            "Auth failure, token: ${
+                                (authState.value as AuthState.NotAuthorized)
+                                    .fail
+                                    .description
+                            }"
+                        )
                         VkIdAuthScreen(
-                            onSuccessAuth = { oAuth, accessToken ->
-                                viewModel.onSuccess()
+                            onSuccessAuth = { accessToken ->
+                                viewModel.onSuccess(accessToken)
+                                Log.d("AuthState", "Auth success, token: ${accessToken.token}")
                             },
-                            onFailureAuth = { oAuth, fail ->
-                                viewModel.onFail()
+                            onFailureAuth = { fail ->
+                                viewModel.onFail(fail)
+                                Log.d("AuthState", "Auth failure, token: ${fail.description}")
                             }
                         )
                     }
 
                     else -> {
-                        viewModel.onFail()
                     }
                 }
             }
