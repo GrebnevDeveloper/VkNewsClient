@@ -21,6 +21,7 @@ retrofit = "2.11.0"
 okhttpBom = "4.12.0"
 converterGson = "2.3.0"
 dagger = "2.53"
+splashScreen = "1.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -53,6 +54,7 @@ okhttp3 = { group = "com.squareup.okhttp3", name = "okhttp" }
 okhttp3-log = { group = "com.squareup.okhttp3", name = "logging-interceptor" }
 dagger2 = { group = "com.google.dagger", name = "dagger", version.ref = "dagger"}
 dagger2-compiler = { group = "com.google.dagger", name = "dagger-compiler", version.ref = "dagger"}
+androidx-splash = {group = "androidx.core", name = "core-splashscreen", version.ref = "splashScreen"}
 
 [bundles]
 network = ["squareup-retrofit", "okhttp3", "okhttp3-log", "google-gson", "converter-gson"]

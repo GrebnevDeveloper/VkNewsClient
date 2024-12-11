@@ -50,6 +50,7 @@ dependencies {
     implementation(libs.bundles.compose)
     implementation(libs.bundles.ui)
     implementation(libs.bundles.coil)
+    implementation(libs.androidx.splash)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.lifecycle.runtime.ktx)
