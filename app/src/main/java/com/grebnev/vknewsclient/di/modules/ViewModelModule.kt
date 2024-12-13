@@ -5,6 +5,7 @@ import com.grebnev.vknewsclient.di.keys.ViewModelKey
 import com.grebnev.vknewsclient.presentation.comments.CommentsViewModel
 import com.grebnev.vknewsclient.presentation.main.MainViewModel
 import com.grebnev.vknewsclient.presentation.news.NewsFeedViewModel
+import com.grebnev.vknewsclient.presentation.profile.ProfileInfoViewModel
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoMap
@@ -21,4 +22,9 @@ interface ViewModelModule {
     @ViewModelKey(MainViewModel::class)
     @Binds
     fun bindMainViewModel(viewModel: MainViewModel): ViewModel
+
+    @IntoMap
+    @ViewModelKey(ProfileInfoViewModel::class)
+    @Binds
+    fun bindProfileInfoViewModel(viewModel: ProfileInfoViewModel): ViewModel
 }

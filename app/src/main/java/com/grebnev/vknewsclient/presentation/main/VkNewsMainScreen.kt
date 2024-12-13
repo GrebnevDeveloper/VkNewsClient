@@ -24,10 +24,13 @@ import com.grebnev.vknewsclient.navigation.NavigationState
 import com.grebnev.vknewsclient.navigation.rememberNavigationState
 import com.grebnev.vknewsclient.presentation.comments.CommentsScreen
 import com.grebnev.vknewsclient.presentation.news.NewsFeedScreen
+import com.grebnev.vknewsclient.presentation.profile.ProfileInfoScreen
 
 
 @Composable
-fun VkNewsMainScreen() {
+fun VkNewsMainScreen(
+    onLogout: () -> Unit
+) {
     val navigationState = rememberNavigationState()
 
     Scaffold(
@@ -55,7 +58,7 @@ fun VkNewsMainScreen() {
                     TextCounter("Favourite")
                 },
                 profileScreenContent = {
-                    TextCounter("Profile")
+                    ProfileInfoScreen(onLogout = onLogout)
                 }
             )
         }

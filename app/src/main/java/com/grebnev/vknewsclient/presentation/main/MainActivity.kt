@@ -32,7 +32,11 @@ class MainActivity : ComponentActivity() {
                                     .token
                             }"
                         )
-                        VkNewsMainScreen()
+                        VkNewsMainScreen(
+                            onLogout = {
+                                viewModel.logout()
+                            }
+                        )
                     }
 
                     is AuthState.NotAuthorized -> {

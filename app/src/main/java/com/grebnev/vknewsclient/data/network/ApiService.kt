@@ -3,6 +3,7 @@ package com.grebnev.vknewsclient.data.network
 import com.grebnev.vknewsclient.data.model.CommentsResponseDto
 import com.grebnev.vknewsclient.data.model.LikesCountResponseDto
 import com.grebnev.vknewsclient.data.model.NewsFeedResponseDto
+import com.grebnev.vknewsclient.data.model.ProfileInfoResponseDto
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -46,4 +47,9 @@ interface ApiService {
         @Query("owner_id") ownerId: Long,
         @Query("post_id") postId: Long
     ): CommentsResponseDto
+
+    @GET("account.getProfileInfo?v=5.199")
+    suspend fun loadProfileInfo(
+        @Query("access_token") token: String
+    ): ProfileInfoResponseDto
 }
