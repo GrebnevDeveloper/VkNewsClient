@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.vk.id.AccessToken
 import com.vk.id.VKID
 import com.vk.id.VKIDAuthFail
+import com.vk.id.logout.VKIDLogoutCallback
+import com.vk.id.logout.VKIDLogoutFail
 import com.vk.id.refresh.VKIDRefreshTokenCallback
 import com.vk.id.refresh.VKIDRefreshTokenFail
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,6 +50,28 @@ class MainViewModel @Inject constructor() : ViewModel() {
                         _authState.value = AuthState.NotAuthorized(
                             VKIDAuthFail.FailedOAuth(fail.description)
                         )
+                    }
+                }
+            )
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            VKID.instance.logout(
+                callback = object : VKIDLogoutCallback {
+                    override fun onSuccess() {
+                        _authState.value = AuthState.NotAuthorized(
+                            VKIDAuthFail.FailedOAuth("The account was logged out. Access token is null")
+                        )
+                    }
+
+                    override fun onFail(fail: VKIDLogoutFail) {
+                        when (fail) {
+                            is VKIDLogoutFail.FailedApiCall -> fail.description
+                            is VKIDLogoutFail.NotAuthenticated -> fail.description
+                            is VKIDLogoutFail.AccessTokenTokenExpired -> fail
+                        }
                     }
                 }
             )
