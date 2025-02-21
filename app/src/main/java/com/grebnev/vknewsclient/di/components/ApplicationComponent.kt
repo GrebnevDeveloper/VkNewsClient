@@ -1,6 +1,7 @@
 package com.grebnev.vknewsclient.di.components
 
-import com.grebnev.vknewsclient.di.modules.DataModule
+import com.grebnev.vknewsclient.di.modules.NetworkModule
+import com.grebnev.vknewsclient.di.modules.RepositoryModule
 import com.grebnev.vknewsclient.di.modules.ViewModelModule
 import com.grebnev.vknewsclient.di.scopes.ApplicationScope
 import com.grebnev.vknewsclient.presentation.ViewModelFactory
@@ -9,7 +10,8 @@ import dagger.Component
 @ApplicationScope
 @Component(
     modules = [
-        DataModule::class,
+        NetworkModule::class,
+        RepositoryModule::class,
         ViewModelModule::class
     ]
 )

@@ -1,6 +1,6 @@
 package com.grebnev.vknewsclient.data.mapper
 
-import com.grebnev.vknewsclient.data.model.ProfileInfoResponseDto
+import com.grebnev.vknewsclient.data.model.profile.ProfileInfoResponseDto
 import com.grebnev.vknewsclient.domain.entity.ProfileInfo
 import javax.inject.Inject
 

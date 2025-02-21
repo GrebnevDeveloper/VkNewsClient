@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">VkNewsClient</string>
-    <string name="navigation_item_main">Home</string>
-    <string name="navigation_item_favourite">Favourite</string>
+    <string name="navigation_item_recommendations">Recs</string>
+    <string name="navigation_item_subscriptions">Subs</string>
     <string name="navigation_item_profile">Profile</string>
     <string name="comments">Комментарии</string>
     <string name="logout">Выйти из аккаунта</string>

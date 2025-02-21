@@ -9,22 +9,23 @@ import com.grebnev.vknewsclient.domain.entity.FeedPost
 @Composable
 fun AppNavGraph(
     navHostController: NavHostController,
-    newsFeedScreenContent: @Composable () -> Unit,
+    recommendationsFeedScreenContent: @Composable () -> Unit,
     commentsScreenContent: @Composable (FeedPost) -> Unit,
-    favouriteScreenContent: @Composable () -> Unit,
+    subscriptionsFeedScreenContent: @Composable () -> Unit,
     profileScreenContent: @Composable () -> Unit,
 ) {
     NavHost(
         navController = navHostController,
-        startDestination = Screen.Home.route
+        startDestination = Screen.RecommendationsHome.route
     ) {
-        homeScreenNavGraph(
-            newsFeedScreenContent = newsFeedScreenContent,
+        recommendationsScreenNavGraph(
+            recommendationsFeedScreenContent = recommendationsFeedScreenContent,
             commentsScreenContent = commentsScreenContent
         )
-        composable(Screen.Favourite.route) {
-            favouriteScreenContent()
-        }
+        subscriptionsScreenNavGraph(
+            subscriptionsFeedScreenContent = subscriptionsFeedScreenContent,
+            commentsScreenContent = commentsScreenContent
+        )
         composable(Screen.Profile.route) {
             profileScreenContent()
         }
