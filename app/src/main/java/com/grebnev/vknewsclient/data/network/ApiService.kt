@@ -1,9 +1,11 @@
 package com.grebnev.vknewsclient.data.network
 
-import com.grebnev.vknewsclient.data.model.CommentsResponseDto
-import com.grebnev.vknewsclient.data.model.LikesCountResponseDto
-import com.grebnev.vknewsclient.data.model.NewsFeedResponseDto
-import com.grebnev.vknewsclient.data.model.ProfileInfoResponseDto
+import com.grebnev.vknewsclient.data.model.comments.CommentsResponseDto
+import com.grebnev.vknewsclient.data.model.news.statistics.LikesCountResponseDto
+import com.grebnev.vknewsclient.data.model.subscriptions.SubscriptionsIdDto
+import com.grebnev.vknewsclient.data.model.subscriptions.SubscriptionsResponseDto
+import com.grebnev.vknewsclient.data.model.news.posts.NewsFeedResponseDto
+import com.grebnev.vknewsclient.data.model.profile.ProfileInfoResponseDto
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -52,4 +54,31 @@ interface ApiService {
     suspend fun loadProfileInfo(
         @Query("access_token") token: String
     ): ProfileInfoResponseDto
+
+    @GET("newsfeed.saveList?v=5.199")
+    suspend fun saveListSubscriptions(
+        @Query("access_token") token: String,
+        @Query("list_id") listId: Long,
+        @Query("title") title: String,
+        @Query("source_ids") sourceIds: String,
+    ) : SubscriptionsIdDto
+
+    @GET("newsfeed.getLists?v=5.199")
+    suspend fun getListSubscriptions(
+        @Query("access_token") token: String,
+        @Query("extended") extended: Int = 1,
+    ) : SubscriptionsResponseDto
+
+    @GET("newsfeed.get?v=5.199")
+    suspend fun loadSubscriptionPosts(
+        @Query("access_token") token: String,
+        @Query("source_ids") sourceIds: String
+    ): NewsFeedResponseDto
+
+    @GET("newsfeed.get?v=5.199")
+    suspend fun loadSubscriptionPosts(
+        @Query("access_token") token: String,
+        @Query("source_ids") sourceIds: String,
+        @Query("start_from") nextFrom: String
+    ): NewsFeedResponseDto
 }

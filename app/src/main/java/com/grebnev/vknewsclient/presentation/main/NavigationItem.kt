@@ -14,14 +14,14 @@ sealed class NavigationItem(
     val icon: ImageVector
 ) {
     data object Home : NavigationItem(
-        screen = Screen.Home,
-        titleResId = R.string.navigation_item_main,
+        screen = Screen.RecommendationsHome,
+        titleResId = R.string.navigation_item_recommendations,
         icon = Icons.Outlined.Home
     )
 
     data object Favourite : NavigationItem(
-        screen = Screen.Favourite,
-        titleResId = R.string.navigation_item_favourite,
+        screen = Screen.Subscriptions,
+        titleResId = R.string.navigation_item_subscriptions,
         icon = Icons.Outlined.Favorite
     )
 

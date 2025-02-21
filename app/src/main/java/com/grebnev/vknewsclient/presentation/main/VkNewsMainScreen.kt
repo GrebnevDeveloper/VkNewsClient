@@ -23,7 +23,8 @@ import com.grebnev.vknewsclient.navigation.AppNavGraph
 import com.grebnev.vknewsclient.navigation.NavigationState
 import com.grebnev.vknewsclient.navigation.rememberNavigationState
 import com.grebnev.vknewsclient.presentation.comments.CommentsScreen
-import com.grebnev.vknewsclient.presentation.news.NewsFeedScreen
+import com.grebnev.vknewsclient.presentation.news.recommendations.RecommendationsFeedScreen
+import com.grebnev.vknewsclient.presentation.news.subscriptions.SubscriptionsFeedScreen
 import com.grebnev.vknewsclient.presentation.profile.ProfileInfoScreen
 
 
@@ -38,8 +39,8 @@ fun VkNewsMainScreen(
         content = { paddingValues ->
             AppNavGraph(
                 navHostController = navigationState.navHostController,
-                newsFeedScreenContent = {
-                    NewsFeedScreen(
+                recommendationsFeedScreenContent = {
+                    RecommendationsFeedScreen(
                         paddingValues = paddingValues,
                         onCommentClickListener = {
                             navigationState.navigateToComments(it)
@@ -54,8 +55,13 @@ fun VkNewsMainScreen(
                         }
                     )
                 },
-                favouriteScreenContent = {
-                    TextCounter("Favourite")
+                subscriptionsFeedScreenContent = {
+                    SubscriptionsFeedScreen(
+                        paddingValues = paddingValues,
+                        onCommentClickListener = {
+                            navigationState.navigateToComments(it)
+                        }
+                    )
                 },
                 profileScreenContent = {
                     ProfileInfoScreen(onLogout = onLogout)

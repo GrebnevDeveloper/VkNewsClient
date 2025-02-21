@@ -3,6 +3,7 @@ package com.grebnev.vknewsclient.presentation.news
 import android.annotation.SuppressLint
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,10 +17,17 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,11 +46,12 @@ import com.grebnev.vknewsclient.ui.theme.DarkRed
 fun PostCard(
     feedPost: FeedPost,
     onCommentsClickListener: (StatisticItem) -> Unit,
-    onLikesClickListener: (StatisticItem) -> Unit
+    onLikesClickListener: (StatisticItem) -> Unit,
+    onSubscribeClickListener: (FeedPost) -> Unit
 ) {
     Card {
         Column(modifier = Modifier.padding(8.dp)) {
-            PostHeader(feedPost)
+            PostHeader(feedPost, onSubscribeClickListener)
             Spacer(modifier = Modifier.height(10.dp))
             Text(text = feedPost.contentText)
             Spacer(modifier = Modifier.height(10.dp))
@@ -156,8 +165,10 @@ private fun IconWithText(
 
 @Composable
 private fun PostHeader(
-    feedPost: FeedPost
+    feedPost: FeedPost,
+    onSubscribeClickListener: (FeedPost) -> Unit
 ) {
+    var expanded by remember { mutableStateOf(false) }
     Row(
         modifier = Modifier
             .fillMaxWidth(),
@@ -182,10 +193,33 @@ private fun PostHeader(
                 color = MaterialTheme.colorScheme.onSecondary
             )
         }
-        Icon(
-            imageVector = Icons.Rounded.MoreVert,
-            contentDescription = "More vert",
-            tint = MaterialTheme.colorScheme.onSecondary
-        )
+        Box {
+            IconButton(onClick = { expanded = true }) {
+                Icon(
+                    imageVector = Icons.Rounded.MoreVert,
+                    contentDescription = "More vert",
+                    tint = MaterialTheme.colorScheme.onSecondary
+                )
+            }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                DropdownMenuItem(
+                    text = { Text(if (!feedPost.isSubscribed) "Subscribe" else "Unsubscribe") },
+                    onClick = { onSubscribeClickListener(feedPost) },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(
+                                if (!feedPost.isSubscribed) R.drawable.ic_subscribe else
+                                    R.drawable.ic_unsubscribe
+                            ),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSecondary
+                        )
+                    }
+                )
+            }
+        }
     }
 }

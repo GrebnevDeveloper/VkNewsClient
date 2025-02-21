@@ -2,9 +2,9 @@ package com.grebnev.vknewsclient.di.modules
 
 import androidx.lifecycle.ViewModel
 import com.grebnev.vknewsclient.di.keys.ViewModelKey
-import com.grebnev.vknewsclient.presentation.comments.CommentsViewModel
 import com.grebnev.vknewsclient.presentation.main.MainViewModel
-import com.grebnev.vknewsclient.presentation.news.NewsFeedViewModel
+import com.grebnev.vknewsclient.presentation.news.recommendations.RecommendationsFeedViewModel
+import com.grebnev.vknewsclient.presentation.news.subscriptions.SubscriptionsFeedViewModel
 import com.grebnev.vknewsclient.presentation.profile.ProfileInfoViewModel
 import dagger.Binds
 import dagger.Module
@@ -14,9 +14,14 @@ import dagger.multibindings.IntoMap
 interface ViewModelModule {
 
     @IntoMap
-    @ViewModelKey(NewsFeedViewModel::class)
+    @ViewModelKey(RecommendationsFeedViewModel::class)
     @Binds
-    fun bindNewsFeedViewModel(viewModel: NewsFeedViewModel): ViewModel
+    fun bindNewsFeedViewModel(viewModel: RecommendationsFeedViewModel): ViewModel
+
+    @IntoMap
+    @ViewModelKey(SubscriptionsFeedViewModel::class)
+    @Binds
+    fun bindSubscriptionsFeedViewModel(viewModel: SubscriptionsFeedViewModel): ViewModel
 
     @IntoMap
     @ViewModelKey(MainViewModel::class)

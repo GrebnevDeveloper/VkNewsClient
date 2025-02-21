@@ -1,11 +1,13 @@
 package com.grebnev.vknewsclient.data.mapper
 
-import com.grebnev.vknewsclient.data.model.CommentsResponseDto
-import com.grebnev.vknewsclient.data.model.NewsFeedResponseDto
+import com.grebnev.vknewsclient.data.model.comments.CommentsResponseDto
+import com.grebnev.vknewsclient.data.model.news.posts.NewsFeedResponseDto
+import com.grebnev.vknewsclient.data.model.subscriptions.SubscriptionsResponseDto
 import com.grebnev.vknewsclient.domain.entity.FeedPost
 import com.grebnev.vknewsclient.domain.entity.PostComment
 import com.grebnev.vknewsclient.domain.entity.StatisticItem
 import com.grebnev.vknewsclient.domain.entity.StatisticType
+import com.grebnev.vknewsclient.domain.entity.Subscription
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -30,12 +32,13 @@ class NewsFeedMapper @Inject constructor() {
                 contentText = post.text,
                 contentImageUrl = post.attachments?.firstOrNull()?.photo?.photoUrls?.lastOrNull()?.photoUrl,
                 statisticsList = listOf(
-                    StatisticItem(StatisticType.LIKES, post.likes.count),
-                    StatisticItem(StatisticType.VIEWS, post.views.count),
-                    StatisticItem(StatisticType.COMMENTS, post.comments.count),
-                    StatisticItem(StatisticType.SHARES, post.reposts.count),
+                    StatisticItem(StatisticType.LIKES, post.likes?.count ?: continue),
+                    StatisticItem(StatisticType.VIEWS, post.views?.count ?: continue),
+                    StatisticItem(StatisticType.COMMENTS, post.comments?.count ?: continue),
+                    StatisticItem(StatisticType.SHARES, post.reposts?.count ?: continue),
                 ),
-                isLiked = post.likes.userLikes > 0
+                isLiked = post.likes.userLikes > 0,
+                isSubscribed = false
             )
             result.add(feedPost)
         }
@@ -63,6 +66,21 @@ class NewsFeedMapper @Inject constructor() {
         }
 
         return result
+    }
+
+    fun mapResponseToSubscriptions(response: SubscriptionsResponseDto): Subscription? {
+        val subscriptions = response.listSubscriptionContent.listSubscriptions
+
+        for (subscription in subscriptions) {
+            if (subscription.title == Subscription.UNIQUE_TITLE) {
+                return Subscription(
+                    id = subscription.id,
+                    title = subscription.title,
+                    sourceIds = subscription.sourceIds
+                )
+            }
+        }
+        return null
     }
 
     private fun mapTimestampToDate(timestamp: Long): String {
