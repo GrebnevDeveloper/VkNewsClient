@@ -68,7 +68,7 @@ class NewsFeedMapper @Inject constructor() {
         return result
     }
 
-    fun mapResponseToSubscriptions(response: SubscriptionsResponseDto): Subscription? {
+    fun mapResponseToSubscriptions(response: SubscriptionsResponseDto): Subscription {
         val subscriptions = response.listSubscriptionContent.listSubscriptions
 
         for (subscription in subscriptions) {
@@ -80,7 +80,7 @@ class NewsFeedMapper @Inject constructor() {
                 )
             }
         }
-        return null
+        return Subscription()
     }
 
     private fun mapTimestampToDate(timestamp: Long): String {

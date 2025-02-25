@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @ApplicationScope
@@ -35,6 +36,8 @@ class RecommendationsFeedRepositoryImpl @Inject constructor(
 
     private val nextDataNeededEvents = MutableSharedFlow<Unit>(replay = 1)
     private val refreshedListFlow = MutableSharedFlow<List<FeedPost>>()
+
+    private val subscriptionsState = subscriptionsStatus.getSubscriptionsState()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val loadedListFlow =
@@ -58,17 +61,16 @@ class RecommendationsFeedRepositoryImpl @Inject constructor(
                     nextFrom = response.newsFeedContent.nextFrom
 
                     val posts = mapper.mapResponseToFeedPost(response)
-                    val newPosts = mutableListOf<FeedPost>()
+                    _feedPosts.addAll(posts)
 
-                    for (post in posts) {
+                    _feedPosts.replaceAll { post ->
                         if (subscription.sourceIds.contains(post.communityId)) {
-                            newPosts.add(post.copy(isSubscribed = true))
+                            post.copy(isSubscribed = true)
                         } else {
-                            newPosts.add(post)
+                            post.copy(isSubscribed = false)
                         }
                     }
 
-                    _feedPosts.addAll(newPosts)
                     emit(feedPosts)
                 }
             }.retry {
@@ -77,11 +79,31 @@ class RecommendationsFeedRepositoryImpl @Inject constructor(
             }
         }
 
+    init {
+        coroutineScope.launch {
+            updateSubscriptionsStatus()
+        }
+    }
+
     private val _feedPosts = mutableListOf<FeedPost>()
     private val feedPosts: List<FeedPost>
         get() = _feedPosts.toList()
 
     private var nextFrom: String? = null
+
+    private suspend fun updateSubscriptionsStatus() {
+        subscriptionsState.collect { subscription ->
+            val sourceIds = subscription.sourceIds
+            _feedPosts.forEachIndexed { index, post ->
+                if (sourceIds.contains(post.communityId)) {
+                    _feedPosts[index] = post.copy(isSubscribed = true)
+                } else {
+                    _feedPosts[index] = post.copy(isSubscribed = false)
+                }
+            }
+            refreshedListFlow.emit(feedPosts)
+        }
+    }
 
     private val recommendations: StateFlow<List<FeedPost>> = loadedListFlow
         .mergeWith(refreshedListFlow)
@@ -114,10 +136,7 @@ class RecommendationsFeedRepositoryImpl @Inject constructor(
     }
 
     override suspend fun changeSubscriptionStatus(feedPost: FeedPost) {
-        val newPost = subscriptionsStatus.changeSubscriptionStatus(feedPost)
-        val postIndex = _feedPosts.indexOf(feedPost)
-        _feedPosts[postIndex] = newPost
-        refreshedListFlow.emit(feedPosts)
+        subscriptionsStatus.changeSubscriptionStatus(feedPost)
     }
 
     companion object {
