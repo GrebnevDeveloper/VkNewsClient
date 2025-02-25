@@ -15,6 +15,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -36,6 +37,7 @@ class SubscriptionsFeedViewModel @Inject constructor(
     private val loadNextDataFlow = MutableSharedFlow<SubscriptionsScreenState>()
 
     val screenState = subscriptionsFlow
+        .onEach { if (it.isEmpty()) loadNextDataFlow.emit(SubscriptionsScreenState.NoSubscriptions) }
         .filter { it.isNotEmpty() }
         .map { SubscriptionsScreenState.Posts(posts = it) as SubscriptionsScreenState }
         .onStart { emit(SubscriptionsScreenState.Loading) }

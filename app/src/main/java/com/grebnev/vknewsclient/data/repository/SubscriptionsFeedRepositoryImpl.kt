@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @ApplicationScope
@@ -35,10 +36,11 @@ class SubscriptionsFeedRepositoryImpl @Inject constructor(
 
     private val nextDataNeededEvents = MutableSharedFlow<Unit>(replay = 1)
     private val refreshedListFlow = MutableSharedFlow<List<FeedPost>>()
+    private val subscriptionsState = subscriptionsStatus.getSubscriptionsState()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val loadedListFlow =
-        subscriptionsStatus.loadSubscribes().flatMapConcat { subscription ->
+        subscriptionsStatus.loadSubscribes().flatMapConcat {
             flow {
                 nextDataNeededEvents.emit(Unit)
                 nextDataNeededEvents.collect {
@@ -52,12 +54,12 @@ class SubscriptionsFeedRepositoryImpl @Inject constructor(
                     val response = if (startFrom == null) {
                         apiService.loadSubscriptionPosts(
                             token = accessToken.getAccessToken(),
-                            sourceIds = subscription.sourceIds.joinToString()
+                            sourceIds = subscriptionsState.value.sourceIds.joinToString()
                         )
                     } else {
                         apiService.loadSubscriptionPosts(
                             token = accessToken.getAccessToken(),
-                            sourceIds = subscription.sourceIds.joinToString(),
+                            sourceIds = subscriptionsState.value.sourceIds.joinToString(),
                             nextFrom = startFrom
                         )
                     }
@@ -67,6 +69,7 @@ class SubscriptionsFeedRepositoryImpl @Inject constructor(
                     val posts = mapper.mapResponseToFeedPost(response)
 
                     _feedPosts.addAll(posts.map { it.copy(isSubscribed = true) })
+
                     emit(feedPosts)
                 }
             }.retry {
@@ -75,11 +78,35 @@ class SubscriptionsFeedRepositoryImpl @Inject constructor(
             }
         }
 
+    init {
+        coroutineScope.launch {
+            updateSubscriptionsStatus()
+        }
+    }
+
     private val _feedPosts = mutableListOf<FeedPost>()
     private val feedPosts: List<FeedPost>
         get() = _feedPosts.toList()
 
     private var nextFrom: String? = null
+
+    private suspend fun updateSubscriptionsStatus() {
+        subscriptionsState.collect { subscription ->
+            val sourceIds = subscription.sourceIds
+            if (_feedPosts.isEmpty() && sourceIds.isNotEmpty()) {
+                nextDataNeededEvents.emit(Unit)
+            }
+            _feedPosts.forEachIndexed { index, post ->
+                if (sourceIds.contains(post.communityId)) {
+                    _feedPosts[index] = post.copy(isSubscribed = true)
+                } else {
+                    _feedPosts[index] = post.copy(isSubscribed = false)
+                }
+            }
+            deletePostsAfterUnsubscribing()
+            refreshedListFlow.emit(feedPosts)
+        }
+    }
 
     private val subscriptions: StateFlow<List<FeedPost>> = loadedListFlow
         .mergeWith(refreshedListFlow)
@@ -113,10 +140,12 @@ class SubscriptionsFeedRepositoryImpl @Inject constructor(
     }
 
     override suspend fun changeSubscriptionStatus(feedPost: FeedPost) {
-        val newPost = subscriptionsStatus.changeSubscriptionStatus(feedPost)
-        val postIndex = _feedPosts.indexOf(feedPost)
-        _feedPosts[postIndex] = newPost
-        refreshedListFlow.emit(feedPosts)
+        subscriptionsStatus.changeSubscriptionStatus(feedPost)
+    }
+
+    private fun deletePostsAfterUnsubscribing() {
+        val deletedPosts = _feedPosts.filter { !it.isSubscribed }
+        _feedPosts.removeAll(deletedPosts)
     }
 
     companion object {

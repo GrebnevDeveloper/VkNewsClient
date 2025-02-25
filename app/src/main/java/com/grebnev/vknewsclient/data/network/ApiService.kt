@@ -63,6 +63,12 @@ interface ApiService {
         @Query("source_ids") sourceIds: String,
     ) : SubscriptionsIdDto
 
+    @GET("newsfeed.deleteList?v=5.199")
+    suspend fun deleteListSubscriptions(
+        @Query("access_token") token: String,
+        @Query("list_id") listId: Long
+    )
+
     @GET("newsfeed.getLists?v=5.199")
     suspend fun getListSubscriptions(
         @Query("access_token") token: String,
