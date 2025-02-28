@@ -1,10 +1,12 @@
 package com.grebnev.vknewsclient.presentation.comments
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -25,6 +27,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
@@ -35,6 +38,8 @@ import coil3.compose.AsyncImage
 import com.grebnev.vknewsclient.R
 import com.grebnev.vknewsclient.domain.entity.FeedPost
 import com.grebnev.vknewsclient.domain.entity.PostComment
+import com.grebnev.vknewsclient.presentation.base.ErrorScreenWithRetry
+import com.grebnev.vknewsclient.presentation.base.LoadingIndicator
 import com.grebnev.vknewsclient.presentation.getApplicationComponent
 
 @Composable
@@ -50,50 +55,88 @@ fun CommentsScreen(
     val screenState = viewModel.screenState.collectAsState(CommentsScreenState.Initial)
     CommentsScreenContent(
         screenState = screenState,
-        onBackPressed = onBackPressed
+        onBackPressed = onBackPressed,
+        viewModel = viewModel
     )
+}
+
+@Composable
+private fun CommentsScreenContent(
+    screenState: State<CommentsScreenState>,
+    onBackPressed: () -> Unit,
+    viewModel: CommentsViewModel
+) {
+    when (val currentState = screenState.value) {
+        is CommentsScreenState.Comments -> {
+            PostComments(
+                comments = currentState.comments,
+                onBackPressed = onBackPressed
+            )
+        }
+
+        is CommentsScreenState.Error -> {
+            ErrorScreenWithRetry(
+                retry = { viewModel.refreshedCommentsPost() },
+                errorMessage = currentState.message,
+            )
+        }
+
+        is CommentsScreenState.Initial -> {
+
+        }
+
+        is CommentsScreenState.Loading -> {
+            LoadingIndicator()
+        }
+
+        is CommentsScreenState.NoComments -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(stringResource(R.string.no_comments))
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CommentsScreenContent(
-    screenState: State<CommentsScreenState>,
+private fun PostComments(
+    comments: List<PostComment>,
     onBackPressed: () -> Unit
 ) {
-    val currentState = screenState.value
-    if (currentState is CommentsScreenState.Comments) {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Text(stringResource(R.string.comments))
-                    },
-                    navigationIcon = {
-                        IconButton(
-                            onClick = { onBackPressed() }
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = null
-                            )
-                        }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(stringResource(R.string.comments))
+                },
+                navigationIcon = {
+                    IconButton(
+                        onClick = { onBackPressed() }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = null
+                        )
                     }
-                )
-            }
-        ) { paddingValues ->
-            LazyColumn(
-                modifier = Modifier.padding(paddingValues),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(
-                    top = 16.dp,
-                    start = 8.dp,
-                    end = 8.dp,
-                    bottom = 72.dp
-                )
-            ) {
-                items(items = currentState.comments, key = { it.id }) { comment ->
-                    CommentItem(comment)
                 }
+            )
+        }
+    ) { paddingValues ->
+        LazyColumn(
+            modifier = Modifier.padding(paddingValues),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(
+                top = 16.dp,
+                start = 8.dp,
+                end = 8.dp,
+                bottom = 72.dp
+            )
+        ) {
+            items(items = comments, key = { it.id }) { comment ->
+                CommentItem(comment)
             }
         }
     }

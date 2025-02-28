@@ -13,4 +13,8 @@ sealed class SubscriptionsScreenState {
         val posts: List<FeedPost>,
         val nextDataLoading: Boolean = false
     ) : SubscriptionsScreenState()
+
+    data class Error(
+        val message: String
+    ) : SubscriptionsScreenState()
 }

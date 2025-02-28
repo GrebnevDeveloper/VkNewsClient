@@ -28,6 +28,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.grebnev.vknewsclient.R
 import com.grebnev.vknewsclient.domain.entity.ProfileInfo
+import com.grebnev.vknewsclient.presentation.base.ErrorScreenWithRetry
+import com.grebnev.vknewsclient.presentation.base.LoadingIndicator
 import com.grebnev.vknewsclient.presentation.getApplicationComponent
 import com.grebnev.vknewsclient.ui.theme.VkContainer
 
@@ -35,21 +37,22 @@ import com.grebnev.vknewsclient.ui.theme.VkContainer
 fun ProfileInfoScreen(
     onLogout: () -> Unit
 ) {
-
     val component = getApplicationComponent()
     val viewModel: ProfileInfoViewModel = viewModel(factory = component.getViewModelFactory())
     val screenState = viewModel.screenState.collectAsState(ProfileInfoScreenState.Initial)
 
     ProfileInfoScreenContent(
         screenState = screenState,
-        onLogout = onLogout
+        onLogout = onLogout,
+        viewModel = viewModel
     )
 }
 
 @Composable
 private fun ProfileInfoScreenContent(
     screenState: State<ProfileInfoScreenState>,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    viewModel: ProfileInfoViewModel
 ) {
     when (val currentState = screenState.value) {
         is ProfileInfoScreenState.Profile -> {
@@ -57,6 +60,17 @@ private fun ProfileInfoScreenContent(
                 profileInfo = currentState.profileInfo,
                 onLogout = { onLogout() }
             )
+        }
+
+        is ProfileInfoScreenState.Error -> {
+            ErrorScreenWithRetry(
+                retry = { viewModel.refreshedProfileInfo() },
+                errorMessage = currentState.message
+            )
+        }
+
+        is ProfileInfoScreenState.Loading -> {
+            LoadingIndicator()
         }
 
         is ProfileInfoScreenState.Initial -> {}

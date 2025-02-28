@@ -39,10 +39,12 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
 dependencies {
+    implementation(libs.timber.log)
     implementation(platform(libs.okhttp3.bom))
     implementation(libs.bundles.network)
     implementation(libs.bundles.vkid)

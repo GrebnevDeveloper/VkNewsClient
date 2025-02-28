@@ -5,10 +5,17 @@ import com.grebnev.vknewsclient.data.network.ApiService
 import com.grebnev.vknewsclient.di.scopes.ApplicationScope
 import com.grebnev.vknewsclient.domain.entity.FeedPost
 import com.grebnev.vknewsclient.domain.entity.Subscription
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
+import timber.log.Timber
 import javax.inject.Inject
 
 @ApplicationScope
@@ -17,19 +24,28 @@ class SubscriptionsStatusSource @Inject constructor(
     private val mapper: NewsFeedMapper,
     private val accessToken: AccessTokenSource
 ) {
-
-    private val subscriptionState = MutableStateFlow(Subscription())
+    private val refreshSubscriptionsNeededEvents = MutableSharedFlow<Unit>(replay = 1)
+    private val subscriptionState = loadSubscribes()
+        .stateIn(
+            scope = CoroutineScope(Dispatchers.Default),
+            started = SharingStarted.Lazily,
+            initialValue = Subscription()
+        )
 
     fun getSubscriptionsState(): StateFlow<Subscription> = subscriptionState
 
-    fun loadSubscribes(): Flow<Subscription> = flow {
-        val response = apiService.getListSubscriptions(
-            token = accessToken.getAccessToken()
-        )
-        val subscription = mapper.mapResponseToSubscriptions(response)
+    private fun loadSubscribes(): Flow<Subscription> = flow {
+        refreshSubscriptionsNeededEvents.emit(Unit)
+        refreshSubscriptionsNeededEvents.collect {
+            val response = apiService.getListSubscriptions(
+                token = accessToken.getAccessToken()
+            )
+            val subscription = mapper.mapResponseToSubscriptions(response)
 
-        subscriptionState.value = subscription
-
+            emit(subscription)
+        }
+    }.catch {
+        Timber.e(it.message)
         emit(subscriptionState.value)
     }
 
@@ -42,25 +58,20 @@ class SubscriptionsStatusSource @Inject constructor(
             newSourceIds.remove(feedPost.communityId)
         }
 
-        val responseId = if (newSourceIds.isNotEmpty()) {
-            val response = apiService.saveListSubscriptions(
+        if (newSourceIds.isNotEmpty()) {
+            apiService.saveListSubscriptions(
                 token = accessToken.getAccessToken(),
                 listId = currentSubscription.id,
                 title = currentSubscription.title,
                 sourceIds = newSourceIds.joinToString()
             )
-            response.id
         } else {
             apiService.deleteListSubscriptions(
                 token = accessToken.getAccessToken(),
                 listId = currentSubscription.id
             )
-            currentSubscription.id
         }
 
-        subscriptionState.value = currentSubscription.copy(
-            id = responseId,
-            sourceIds = newSourceIds
-        )
+        refreshSubscriptionsNeededEvents.emit(Unit)
     }
 }

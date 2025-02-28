@@ -3,6 +3,14 @@
     <string name="navigation_item_recommendations">Recs</string>
     <string name="navigation_item_subscriptions">Subs</string>
     <string name="navigation_item_profile">Profile</string>
-    <string name="comments">Комментарии</string>
-    <string name="logout">Выйти из аккаунта</string>
+    <string name="comments">Comments</string>
+    <string name="recommendations">Recommendations</string>
+    <string name="subscriptions">Subscriptions</string>
+    <string name="logout">Logout of account</string>
+    <string name="network_error_message">Network problems. Check the network connection.</string>
+    <string name="unknown_error_message">An unknown error occurred during the request.</string>
+    <string name="error_occurred">An error has occurred</string>
+    <string name="retry">Retry</string>
+    <string name="no_comments">No comments for post</string>
+    <string name="no_news">No news from subscriptions</string>
 </resources>

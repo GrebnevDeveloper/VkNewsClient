@@ -11,4 +11,8 @@ sealed class RecommendationsFeedScreenState {
         val posts: List<FeedPost>,
         val nextDataLoading: Boolean = false
     ) : RecommendationsFeedScreenState()
+
+    data class Error(
+        val message: String
+    ) : RecommendationsFeedScreenState()
 }
