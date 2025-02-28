@@ -1,7 +1,6 @@
 package com.grebnev.vknewsclient.presentation.main
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -10,6 +9,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.grebnev.vknewsclient.presentation.getApplicationComponent
 import com.grebnev.vknewsclient.ui.theme.VkNewsClientTheme
+import timber.log.Timber
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,8 +24,7 @@ class MainActivity : ComponentActivity() {
             VkNewsClientTheme {
                 when (authState.value) {
                     is AuthState.Authorized -> {
-                        Log.d(
-                            "AuthState",
+                        Timber.d(
                             "Auth success, token: ${
                                 (authState.value as AuthState.Authorized)
                                     .accessToken
@@ -40,8 +39,7 @@ class MainActivity : ComponentActivity() {
                     }
 
                     is AuthState.NotAuthorized -> {
-                        Log.d(
-                            "AuthState",
+                        Timber.d(
                             "Auth failure, token: ${
                                 (authState.value as AuthState.NotAuthorized)
                                     .fail
@@ -51,11 +49,11 @@ class MainActivity : ComponentActivity() {
                         VkIdAuthScreen(
                             onSuccessAuth = { accessToken ->
                                 viewModel.onSuccess(accessToken)
-                                Log.d("AuthState", "Auth success, token: ${accessToken.token}")
+                                Timber.d("Auth success, token: ${accessToken.token}")
                             },
                             onFailureAuth = { fail ->
                                 viewModel.onFail(fail)
-                                Log.d("AuthState", "Auth failure, token: ${fail.description}")
+                                Timber.d("Auth failure, token: ${fail.description}")
                             }
                         )
                     }

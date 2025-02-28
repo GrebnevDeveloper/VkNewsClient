@@ -1,4 +1,4 @@
-package com.grebnev.vknewsclient.presentation.news
+package com.grebnev.vknewsclient.presentation.news.base
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.clickable

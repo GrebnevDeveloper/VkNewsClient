@@ -1,8 +1,9 @@
 package com.grebnev.vknewsclient.domain.repository
 
-import com.grebnev.vknewsclient.domain.entity.ProfileInfo
+import com.grebnev.vknewsclient.domain.state.ProfileInfoState
 import kotlinx.coroutines.flow.StateFlow
 
 interface ProfileInfoRepository {
-    fun getProfileInfo(): StateFlow<ProfileInfo>
+    val getProfileInfo: StateFlow<ProfileInfoState>
+    suspend fun retry()
 }
