@@ -1,17 +1,18 @@
 package com.grebnev.vknewsclient.presentation.news.subscriptions
 
 import androidx.lifecycle.viewModelScope
-import com.grebnev.vknewsclient.data.ErrorHandlingValues
+import com.grebnev.vknewsclient.core.wrappers.ErrorType
+import com.grebnev.vknewsclient.core.wrappers.ResultState
+import com.grebnev.vknewsclient.core.handlers.ErrorHandler
 import com.grebnev.vknewsclient.di.keys.NewsFeedType
 import com.grebnev.vknewsclient.domain.entity.FeedPost
-import com.grebnev.vknewsclient.domain.state.FeedPostState
 import com.grebnev.vknewsclient.domain.usecases.ChangeLikeStatusUseCase
 import com.grebnev.vknewsclient.domain.usecases.ChangeSubscriptionStatusUseCase
 import com.grebnev.vknewsclient.domain.usecases.DeletePostUseCase
 import com.grebnev.vknewsclient.domain.usecases.GetSubscriptionPostsUseCase
 import com.grebnev.vknewsclient.domain.usecases.LoadNextDataUseCase
-import com.grebnev.vknewsclient.extensions.mergeWith
-import com.grebnev.vknewsclient.presentation.ErrorMessageProvider
+import com.grebnev.vknewsclient.core.extensions.mergeWith
+import com.grebnev.vknewsclient.presentation.base.ErrorMessageProvider
 import com.grebnev.vknewsclient.presentation.news.base.NewsFeedViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -34,7 +35,7 @@ class SubscriptionsFeedViewModel @Inject constructor(
     private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
         Timber.e("Coroutine exception handler was called")
         viewModelScope.launch {
-            val typeError = ErrorHandlingValues.getTypeError(throwable)
+            val typeError = ErrorHandler.getErrorType(throwable)
             _errorMessage.value = errorMessageProvider.getErrorMessage(typeError)
         }
     }
@@ -44,20 +45,20 @@ class SubscriptionsFeedViewModel @Inject constructor(
     private val loadNextDataFlow = MutableSharedFlow<SubscriptionsScreenState>()
 
     val screenState = subscriptionsFlow
-        .map { mapSubscriptionsStateToScreenState(it) }
+        .map { mapResultStateToScreenState(it) }
         .onStart { SubscriptionsScreenState.Loading }
         .mergeWith(loadNextDataFlow)
         .catch { throwable ->
             Timber.e(throwable.message)
-            emit(SubscriptionsScreenState.Error(throwable.message ?: "Unknown error"))
+            SubscriptionsScreenState.Error(throwable.message ?: "Unknown error")
         }
 
-    private fun mapSubscriptionsStateToScreenState(
-        subscriptionState: FeedPostState
+    private fun mapResultStateToScreenState(
+        subscriptionState: ResultState<List<FeedPost>, ErrorType>
     ): SubscriptionsScreenState {
         return when (subscriptionState) {
-            is FeedPostState.Posts -> {
-                val currentFeedPosts = subscriptionState.posts
+            is ResultState.Success -> {
+                val currentFeedPosts = subscriptionState.data
                 if (currentFeedPosts.isNotEmpty()) {
                     SubscriptionsScreenState.Posts(posts = currentFeedPosts)
                 } else {
@@ -65,12 +66,15 @@ class SubscriptionsFeedViewModel @Inject constructor(
                 }
             }
 
-            is FeedPostState.NoPosts ->
+            is ResultState.Initial ->
+                SubscriptionsScreenState.Loading
+
+            is ResultState.Empty ->
                 SubscriptionsScreenState.NoSubscriptions
 
-            is FeedPostState.Error ->
+            is ResultState.Error ->
                 SubscriptionsScreenState.Error(
-                    errorMessageProvider.getErrorMessage(subscriptionState.type)
+                    errorMessageProvider.getErrorMessage(subscriptionState.error)
                 )
         }
     }
@@ -79,7 +83,7 @@ class SubscriptionsFeedViewModel @Inject constructor(
         viewModelScope.launch(exceptionHandler) {
             loadNextDataFlow.emit(
                 SubscriptionsScreenState.Posts(
-                    posts = (subscriptionsFlow.value as FeedPostState.Posts).posts,
+                    posts = (subscriptionsFlow.value as ResultState.Success).data,
                     nextDataLoading = true
                 )
             )

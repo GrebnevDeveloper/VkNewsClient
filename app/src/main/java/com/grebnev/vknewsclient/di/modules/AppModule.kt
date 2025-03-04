@@ -3,7 +3,7 @@ package com.grebnev.vknewsclient.di.modules
 import android.app.Application
 import android.content.Context
 import com.grebnev.vknewsclient.di.scopes.ApplicationScope
-import com.grebnev.vknewsclient.presentation.ErrorMessageProvider
+import com.grebnev.vknewsclient.presentation.base.ErrorMessageProvider
 import dagger.Module
 import dagger.Provides
 

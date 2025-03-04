@@ -1,4 +1,4 @@
-package com.grebnev.vknewsclient.presentation.main
+package com.grebnev.vknewsclient.presentation.main.auth
 
 import com.vk.id.AccessToken
 import com.vk.id.VKIDAuthFail

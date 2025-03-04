@@ -62,7 +62,7 @@ private fun SubscriptionsFeedScreenContent(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(stringResource(R.string.no_news))
+                Text(stringResource(R.string.no_subscriptions))
             }
         }
 

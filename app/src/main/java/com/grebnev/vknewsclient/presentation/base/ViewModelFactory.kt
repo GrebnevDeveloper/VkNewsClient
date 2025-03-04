@@ -1,4 +1,4 @@
-package com.grebnev.vknewsclient.presentation
+package com.grebnev.vknewsclient.presentation.base
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

@@ -5,7 +5,7 @@ import com.grebnev.vknewsclient.di.modules.NetworkModule
 import com.grebnev.vknewsclient.di.modules.RepositoryModule
 import com.grebnev.vknewsclient.di.modules.ViewModelModule
 import com.grebnev.vknewsclient.di.scopes.ApplicationScope
-import com.grebnev.vknewsclient.presentation.ViewModelFactory
+import com.grebnev.vknewsclient.presentation.base.ViewModelFactory
 import dagger.Component
 
 @ApplicationScope

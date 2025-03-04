@@ -2,6 +2,7 @@ package com.grebnev.vknewsclient.presentation.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grebnev.vknewsclient.presentation.main.auth.AuthState
 import com.vk.id.AccessToken
 import com.vk.id.VKID
 import com.vk.id.VKIDAuthFail

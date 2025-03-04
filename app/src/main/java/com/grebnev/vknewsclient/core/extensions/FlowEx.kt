@@ -1,4 +1,4 @@
-package com.grebnev.vknewsclient.extensions
+package com.grebnev.vknewsclient.core.extensions
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.merge
