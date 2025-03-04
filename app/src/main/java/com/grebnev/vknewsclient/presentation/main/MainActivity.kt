@@ -8,6 +8,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.grebnev.vknewsclient.presentation.getApplicationComponent
+import com.grebnev.vknewsclient.presentation.main.auth.AuthState
+import com.grebnev.vknewsclient.presentation.main.auth.VkIdAuthScreen
+import com.grebnev.vknewsclient.presentation.main.auth.VkNewsMainScreen
 import com.grebnev.vknewsclient.ui.theme.VkNewsClientTheme
 import timber.log.Timber
 

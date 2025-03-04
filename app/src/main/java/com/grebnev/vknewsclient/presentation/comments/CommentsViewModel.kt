@@ -2,11 +2,13 @@ package com.grebnev.vknewsclient.presentation.comments
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grebnev.vknewsclient.core.wrappers.ResultState
 import com.grebnev.vknewsclient.domain.entity.FeedPost
-import com.grebnev.vknewsclient.domain.state.PostCommentState
+import com.grebnev.vknewsclient.domain.entity.PostComment
+import com.grebnev.vknewsclient.core.wrappers.ErrorType
 import com.grebnev.vknewsclient.domain.usecases.GetCommentsUseCase
-import com.grebnev.vknewsclient.extensions.mergeWith
-import com.grebnev.vknewsclient.presentation.ErrorMessageProvider
+import com.grebnev.vknewsclient.core.extensions.mergeWith
+import com.grebnev.vknewsclient.presentation.base.ErrorMessageProvider
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
@@ -23,28 +25,28 @@ class CommentsViewModel @Inject constructor(
 
     val screenState = getCommentsUseCase.getCommentsPost(feedPost)
         .map { postCommentsState ->
-            mapCommentsStateToScreenState(feedPost, postCommentsState as PostCommentState)
+            mapCommentsStateToScreenState(feedPost, postCommentsState)
         }
         .onStart { CommentsScreenState.Loading }
         .mergeWith(loadNextDataFlow)
 
     private fun mapCommentsStateToScreenState(
         feedPost: FeedPost,
-        postCommentState: PostCommentState
+        postCommentState: ResultState<List<PostComment>, ErrorType>
     ): CommentsScreenState {
         return when (postCommentState) {
-            is PostCommentState.Comments ->
-                CommentsScreenState.Comments(feedPost, postCommentState.comments)
+            is ResultState.Success ->
+                CommentsScreenState.Comments(feedPost, postCommentState.data)
 
-            is PostCommentState.Error ->
+            is ResultState.Error ->
                 CommentsScreenState.Error(
-                    errorMessage.getErrorMessage(postCommentState.type)
+                    errorMessage.getErrorMessage(postCommentState.error)
                 )
 
-            is PostCommentState.Initial ->
+            is ResultState.Initial ->
                 CommentsScreenState.Loading
 
-            is PostCommentState.NoComments ->
+            is ResultState.Empty ->
                 CommentsScreenState.NoComments
         }
     }

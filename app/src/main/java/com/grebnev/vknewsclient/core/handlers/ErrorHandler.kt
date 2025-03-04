@@ -1,15 +1,15 @@
-package com.grebnev.vknewsclient.data
+package com.grebnev.vknewsclient.core.handlers
 
-import com.grebnev.vknewsclient.domain.state.ErrorType
+import com.grebnev.vknewsclient.core.wrappers.ErrorType
 import timber.log.Timber
 import java.io.IOException
 
-interface ErrorHandlingValues {
+interface ErrorHandler {
     companion object {
         const val RETRY_TIMEOUT = 3000L
         const val MAX_COUNT_RETRY = 3L
 
-        fun getTypeError(throwable: Throwable): ErrorType {
+        fun getErrorType(throwable: Throwable): ErrorType {
             return when(throwable) {
                 is IOException -> {
                     Timber.e("Network exception")

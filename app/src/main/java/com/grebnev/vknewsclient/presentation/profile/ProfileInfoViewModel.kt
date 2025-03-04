@@ -2,11 +2,12 @@ package com.grebnev.vknewsclient.presentation.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.grebnev.vknewsclient.data.ErrorHandlingValues
-import com.grebnev.vknewsclient.domain.state.ProfileInfoState
+import com.grebnev.vknewsclient.core.wrappers.ErrorType
+import com.grebnev.vknewsclient.core.wrappers.ResultState
+import com.grebnev.vknewsclient.domain.entity.ProfileInfo
 import com.grebnev.vknewsclient.domain.usecases.GetProfileInfoUseCase
-import com.grebnev.vknewsclient.extensions.mergeWith
-import com.grebnev.vknewsclient.presentation.ErrorMessageProvider
+import com.grebnev.vknewsclient.core.extensions.mergeWith
+import com.grebnev.vknewsclient.presentation.base.ErrorMessageProvider
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -23,26 +24,31 @@ class ProfileInfoViewModel @Inject constructor(
     private val loadNextDataFlow = MutableSharedFlow<ProfileInfoScreenState>()
 
     val screenState = profileInfoUseCase.getProfileInfo
-        .map { mapProfileInfoStateToScreenState(it) }
+        .map { mapResultStateToScreenState(it) }
         .onStart { ProfileInfoScreenState.Loading }
         .mergeWith(loadNextDataFlow)
         .catch { throwable ->
             Timber.e(throwable.message)
-            ProfileInfoState.Error(ErrorHandlingValues.getTypeError(throwable))
+            ProfileInfoScreenState.Error(throwable.message ?: "Unknown error")
         }
 
-    private fun mapProfileInfoStateToScreenState(
-        profileInfoState: ProfileInfoState
+    private fun mapResultStateToScreenState(
+        profileInfoState: ResultState<ProfileInfo, ErrorType>
     ): ProfileInfoScreenState {
-        return when(profileInfoState) {
-            is ProfileInfoState.Profile ->
-                ProfileInfoScreenState.Profile(profileInfoState.profile)
-            is ProfileInfoState.Error ->
+        return when (profileInfoState) {
+            is ResultState.Success ->
+                ProfileInfoScreenState.Profile(profileInfoState.data)
+
+            is ResultState.Error ->
                 ProfileInfoScreenState.Error(
-                    errorMessage.getErrorMessage(profileInfoState.type)
+                    errorMessage.getErrorMessage(profileInfoState.error)
                 )
-            is ProfileInfoState.Initial ->
+
+            is ResultState.Initial ->
                 ProfileInfoScreenState.Loading
+
+            is ResultState.Empty ->
+                ProfileInfoScreenState.Initial
         }
     }
 

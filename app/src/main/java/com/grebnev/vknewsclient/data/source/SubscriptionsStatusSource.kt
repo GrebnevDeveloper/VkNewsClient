@@ -1,5 +1,6 @@
 package com.grebnev.vknewsclient.data.source
 
+import com.grebnev.vknewsclient.core.handlers.ErrorHandler
 import com.grebnev.vknewsclient.data.mapper.NewsFeedMapper
 import com.grebnev.vknewsclient.data.network.ApiService
 import com.grebnev.vknewsclient.di.scopes.ApplicationScope
@@ -7,15 +8,14 @@ import com.grebnev.vknewsclient.domain.entity.FeedPost
 import com.grebnev.vknewsclient.domain.entity.Subscription
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.stateIn
-import timber.log.Timber
 import javax.inject.Inject
 
 @ApplicationScope
@@ -44,9 +44,9 @@ class SubscriptionsStatusSource @Inject constructor(
 
             emit(subscription)
         }
-    }.catch {
-        Timber.e(it.message)
-        emit(subscriptionState.value)
+    }.retry {
+        delay(ErrorHandler.RETRY_TIMEOUT)
+        true
     }
 
     suspend fun changeSubscriptionStatus(feedPost: FeedPost) {

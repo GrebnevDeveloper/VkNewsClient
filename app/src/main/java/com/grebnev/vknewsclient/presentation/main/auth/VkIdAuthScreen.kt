@@ -1,4 +1,4 @@
-package com.grebnev.vknewsclient.presentation.main
+package com.grebnev.vknewsclient.presentation.main.auth
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

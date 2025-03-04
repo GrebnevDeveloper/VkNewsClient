@@ -2,7 +2,7 @@ package com.grebnev.vknewsclient.di.components
 
 import com.grebnev.vknewsclient.di.modules.CommentsViewModelModule
 import com.grebnev.vknewsclient.domain.entity.FeedPost
-import com.grebnev.vknewsclient.presentation.ViewModelFactory
+import com.grebnev.vknewsclient.presentation.base.ViewModelFactory
 import dagger.BindsInstance
 import dagger.Subcomponent
 

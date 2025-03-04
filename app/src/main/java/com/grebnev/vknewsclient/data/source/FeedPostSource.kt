@@ -4,7 +4,7 @@ import com.grebnev.vknewsclient.data.mapper.NewsFeedMapper
 import com.grebnev.vknewsclient.data.network.ApiService
 import com.grebnev.vknewsclient.domain.entity.FeedPost
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
 class FeedPostSource @Inject constructor(
@@ -12,9 +12,8 @@ class FeedPostSource @Inject constructor(
     private val accessToken: AccessTokenSource,
     private val mapper: NewsFeedMapper
 ) {
-    private val nextFromState = MutableStateFlow<String?>(null)
-
-    fun getNextFromState() = nextFromState.asStateFlow()
+    private val _nextFromState = MutableStateFlow<String?>(null)
+    val nextFromState: StateFlow<String?> = _nextFromState
 
     suspend fun loadRecommendationsFeed(): List<FeedPost> {
         val startFrom = nextFromState.value
@@ -24,7 +23,7 @@ class FeedPostSource @Inject constructor(
             apiService.loadRecommendations(accessToken.getAccessToken(), startFrom)
         }
 
-        nextFromState.value = response.newsFeedContent.nextFrom
+        _nextFromState.value = response.newsFeedContent.nextFrom
 
         return mapper.mapResponseToFeedPost(response)
     }
@@ -44,7 +43,7 @@ class FeedPostSource @Inject constructor(
             )
         }
 
-        nextFromState.value = response.newsFeedContent.nextFrom
+        _nextFromState.value = response.newsFeedContent.nextFrom
 
         return mapper.mapResponseToFeedPost(response)
     }

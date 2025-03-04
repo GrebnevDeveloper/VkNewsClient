@@ -1,4 +1,4 @@
-package com.grebnev.vknewsclient.domain.state
+package com.grebnev.vknewsclient.core.wrappers
 
 enum class ErrorType {
     NETWORK_ERROR,

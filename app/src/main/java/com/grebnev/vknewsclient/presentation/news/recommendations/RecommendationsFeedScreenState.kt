@@ -7,6 +7,8 @@ sealed class RecommendationsFeedScreenState {
 
     data object Loading : RecommendationsFeedScreenState()
 
+    data object NoRecommendations : RecommendationsFeedScreenState()
+
     data class Posts(
         val posts: List<FeedPost>,
         val nextDataLoading: Boolean = false

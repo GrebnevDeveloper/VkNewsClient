@@ -1,15 +1,18 @@
 package com.grebnev.vknewsclient.data.repository
 
-import com.grebnev.vknewsclient.data.ErrorHandlingValues
+import com.grebnev.vknewsclient.core.wrappers.ResultState
+import com.grebnev.vknewsclient.core.handlers.ErrorHandler
 import com.grebnev.vknewsclient.data.mapper.ProfileInfoMapper
 import com.grebnev.vknewsclient.data.network.ApiService
 import com.grebnev.vknewsclient.data.source.AccessTokenSource
+import com.grebnev.vknewsclient.domain.entity.ProfileInfo
 import com.grebnev.vknewsclient.domain.repository.ProfileInfoRepository
-import com.grebnev.vknewsclient.domain.state.ProfileInfoState
+import com.grebnev.vknewsclient.core.wrappers.ErrorType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -39,26 +42,27 @@ class ProfileInfoRepositoryImpl @Inject constructor(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val profileInfoFlow = retryTrigger.flatMapLatest {
-        flow {
-            val response = apiService.loadProfileInfo(accessToken.getAccessToken())
-            val profileInfo = mapper.mapResponseToProfileInfo(response)
-            emit(ProfileInfoState.Profile(profileInfo) as ProfileInfoState)
-        }.retry(ErrorHandlingValues.MAX_COUNT_RETRY) {
-            delay(ErrorHandlingValues.RETRY_TIMEOUT)
-            true
-        }.catch { throwable ->
-            Timber.e(throwable.message)
-            val typeError = ErrorHandlingValues.getTypeError(throwable)
-            emit(ProfileInfoState.Error(typeError) as ProfileInfoState)
+    private val profileInfoFlow: Flow<ResultState<ProfileInfo, ErrorType>> =
+        retryTrigger.flatMapLatest {
+            flow {
+                val response = apiService.loadProfileInfo(accessToken.getAccessToken())
+                val profileInfo = mapper.mapResponseToProfileInfo(response)
+                emit(ResultState.Success(profileInfo) as ResultState<ProfileInfo, ErrorType>)
+            }.retry(ErrorHandler.MAX_COUNT_RETRY) {
+                delay(ErrorHandler.RETRY_TIMEOUT)
+                true
+            }.catch { throwable ->
+                Timber.e(throwable.message)
+                val errorType = ErrorHandler.getErrorType(throwable)
+                emit(ResultState.Error(errorType))
+            }
         }
-    }
 
-    override val getProfileInfo: StateFlow<ProfileInfoState> = profileInfoFlow
+    override val getProfileInfo: StateFlow<ResultState<ProfileInfo, ErrorType>> = profileInfoFlow
         .stateIn(
             scope = coroutineScope,
             started = SharingStarted.Lazily,
-            initialValue = ProfileInfoState.Initial
+            initialValue = ResultState.Initial
         )
 
     override suspend fun retry() {

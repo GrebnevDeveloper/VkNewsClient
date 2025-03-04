@@ -1,4 +1,4 @@
-package com.grebnev.vknewsclient.presentation.main
+package com.grebnev.vknewsclient.presentation.main.auth
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +23,7 @@ import com.grebnev.vknewsclient.navigation.AppNavGraph
 import com.grebnev.vknewsclient.navigation.NavigationState
 import com.grebnev.vknewsclient.navigation.rememberNavigationState
 import com.grebnev.vknewsclient.presentation.comments.CommentsScreen
+import com.grebnev.vknewsclient.presentation.main.NavigationItem
 import com.grebnev.vknewsclient.presentation.news.recommendations.RecommendationsFeedScreen
 import com.grebnev.vknewsclient.presentation.news.subscriptions.SubscriptionsFeedScreen
 import com.grebnev.vknewsclient.presentation.profile.ProfileInfoScreen

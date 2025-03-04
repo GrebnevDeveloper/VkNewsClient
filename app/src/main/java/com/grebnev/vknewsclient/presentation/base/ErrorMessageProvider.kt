@@ -1,8 +1,8 @@
-package com.grebnev.vknewsclient.presentation
+package com.grebnev.vknewsclient.presentation.base
 
 import android.content.Context
 import com.grebnev.vknewsclient.R
-import com.grebnev.vknewsclient.domain.state.ErrorType
+import com.grebnev.vknewsclient.core.wrappers.ErrorType
 import javax.inject.Inject
 
 class ErrorMessageProvider @Inject constructor(
