@@ -1,10 +1,12 @@
 package com.grebnev.vknewsclient.data.source
 
+import androidx.annotation.VisibleForTesting
 import com.grebnev.vknewsclient.data.mapper.NewsFeedMapper
 import com.grebnev.vknewsclient.data.network.ApiService
 import com.grebnev.vknewsclient.domain.entity.FeedPost
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+
 import javax.inject.Inject
 
 class FeedPostSource @Inject constructor(
@@ -12,7 +14,8 @@ class FeedPostSource @Inject constructor(
     private val accessToken: AccessTokenSource,
     private val mapper: NewsFeedMapper
 ) {
-    private val _nextFromState = MutableStateFlow<String?>(null)
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal val _nextFromState = MutableStateFlow<String?>(null)
     val nextFromState: StateFlow<String?> = _nextFromState
 
     suspend fun loadRecommendationsFeed(): List<FeedPost> {
