@@ -1,20 +1,23 @@
 [versions]
-agp = "8.8.1"
+agp = "8.9.0"
 kotlin = "2.0.20"
 coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
+mockK = "1.13.17"
+coroutinesTest = "1.10.1"
+turbine = "1.2.0"
 lifecycleRuntimeKtx = "2.8.7"
-activityCompose = "1.10.0"
+activityCompose = "1.10.1"
 composeBom = "2025.02.00"
 runtimeLivedata = "1.7.8"
-navigationCompose = "2.8.7"
+navigationCompose = "2.8.8"
 viewmodelCompose = "2.8.7"
 gson = "2.11.0"
 coil = "3.0.4"
 vkid = "1.0.0"
-desugar = "2.1.4"
+desugar = "2.1.5"
 vkidSdk = "2.2.1"
 onetap = "2.2.1"
 retrofit = "2.11.0"
@@ -27,6 +30,9 @@ timber = "5.0.1"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockK" }
+coroutines-test = { group ="org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutinesTest"}
+turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine"}
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
