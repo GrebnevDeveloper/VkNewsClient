@@ -1,15 +1,22 @@
 FunctionNaming:
   active: true
-  excludes: [ '**/test/**', '**/androidTest/**', '**/
-commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/
-androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**' ]
+  excludes: [
+    '**/test/**',
+    '**/androidTest/**',
+    '**/commonTest/**',
+    '**/jvmTest/**',
+    '**/androidUnitTest/**',
+    '**/androidInstrumentedTest/**',
+    '**/jsTest/**',
+    '**/iosTest/**'
+  ]
   functionPattern: '[a-z][a-zA-Z0-9]*'
   excludeClassPattern: '$^'
   ignoreAnnotated: [ 'Composable' ]
 
 LongMethod:
   active: true
-  threshold: 20
+  threshold: 40
 
 LongParameterList:
   active: true

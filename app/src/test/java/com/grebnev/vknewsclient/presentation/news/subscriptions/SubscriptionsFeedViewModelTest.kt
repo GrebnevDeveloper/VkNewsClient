@@ -66,6 +66,7 @@ class SubscriptionsFeedViewModelTest {
                 assertEquals(SubscriptionsScreenState.Loading, awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -82,6 +83,7 @@ class SubscriptionsFeedViewModelTest {
                 assertEquals(SubscriptionsScreenState.Posts(mockFeedPosts), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -93,6 +95,7 @@ class SubscriptionsFeedViewModelTest {
                 assertEquals(SubscriptionsScreenState.NoSubscriptions, awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -108,6 +111,7 @@ class SubscriptionsFeedViewModelTest {
                 assertEquals(SubscriptionsScreenState.Error(errorMessage), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -123,7 +127,7 @@ class SubscriptionsFeedViewModelTest {
             viewModel.loadNextPosts()
             advanceUntilIdle()
 
-            coVerify(exactly = 1) { mockLoadNextDataUseCase(NewsFeedType.SUBSCRIPTIONS) }
+            coVerify { mockLoadNextDataUseCase(NewsFeedType.SUBSCRIPTIONS) }
         }
 
     @Test

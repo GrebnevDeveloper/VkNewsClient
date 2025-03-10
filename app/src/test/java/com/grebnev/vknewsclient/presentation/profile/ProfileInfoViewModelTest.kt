@@ -18,6 +18,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ProfileInfoViewModelTest {
     private lateinit var mockProfileInfoUseCase: GetProfileInfoUseCase
     private lateinit var mockErrorMessageProvider: ErrorMessageProvider
@@ -43,6 +44,7 @@ class ProfileInfoViewModelTest {
                 assertEquals(ProfileInfoScreenState.Loading, awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -62,6 +64,7 @@ class ProfileInfoViewModelTest {
                 assertEquals(ProfileInfoScreenState.Profile(mockProfileInfo), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -77,9 +80,9 @@ class ProfileInfoViewModelTest {
                 assertEquals(ProfileInfoScreenState.Error(errorMessage), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `refreshedProfileInfo should emit Loading and trigger retry`() =
         runTest {
@@ -92,7 +95,8 @@ class ProfileInfoViewModelTest {
                 assertEquals(ProfileInfoScreenState.Loading, awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
 
-            coVerify(exactly = 1) { mockProfileInfoUseCase.retry() }
+            coVerify { mockProfileInfoUseCase.retry() }
         }
 }

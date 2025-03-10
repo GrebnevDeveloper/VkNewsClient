@@ -12,7 +12,8 @@ plugins {
 
 detekt {
     toolVersion = libs.versions.detektPlugin.toString()
-    config.setFrom(files("${project.rootDir}/config/detekt/detekt. yml"))
+    config.setFrom(files("${project.rootDir}/config/detekt/detekt.yml"))
+    source.setFrom(files("src/main/java", "src/test/java"))
     buildUponDefaultConfig = true
     parallel = true
 }
@@ -25,6 +26,10 @@ ktlint {
     filter {
         exclude("**/generated/**")
     }
+}
+
+tasks.withType<Test>().configureEach {
+    maxParallelForks = 1
 }
 
 dependencies {

@@ -95,6 +95,8 @@ class SubscriptionsFeedRepositoryImplTest {
                 assertEquals(ResultState.Success(mockFeedPosts), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
+
             coVerify { mockFeedPostSource.loadSubscriptionsFeed(any()) }
         }
 
@@ -108,6 +110,7 @@ class SubscriptionsFeedRepositoryImplTest {
                 assertEquals(ResultState.Empty, awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -121,6 +124,8 @@ class SubscriptionsFeedRepositoryImplTest {
                 assertEquals(ResultState.Error(ErrorType.NETWORK_ERROR), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
+
             coVerify { mockFeedPostSource.loadSubscriptionsFeed(any()) }
         }
 
@@ -138,6 +143,7 @@ class SubscriptionsFeedRepositoryImplTest {
                 assertEquals(ResultState.Success(mockFeedPosts), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
 
             coVerify { mockFeedPostSource.loadSubscriptionsFeed(any()) }
         }
@@ -157,6 +163,7 @@ class SubscriptionsFeedRepositoryImplTest {
                 assertEquals(ResultState.Success(emptyList<FeedPost>()), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
             coVerify { mockApiService.ignoreFeedPost("mockToken", 123L, 1L) }
         }
 
@@ -176,6 +183,7 @@ class SubscriptionsFeedRepositoryImplTest {
                 assertEquals(ResultState.Success(listOf(updatedFeedPost)), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -194,6 +202,7 @@ class SubscriptionsFeedRepositoryImplTest {
                 assertEquals(ResultState.Success(listOf(updatedFeedPost)), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
 
             coVerify { mockSubscriptionsSource.changeSubscriptionStatus(mockFeedPost) }
         }

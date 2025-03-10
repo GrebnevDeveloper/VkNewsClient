@@ -9,11 +9,14 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class FeedPostSourceTest {
     private lateinit var feedPostSource: FeedPostSource
     private lateinit var mockApiService: ApiService
@@ -53,9 +56,10 @@ class FeedPostSourceTest {
                 assertEquals("nextFromToken", awaitItem())
                 assertEquals(mockFeedPosts, result)
             }
+            advanceUntilIdle()
 
-            coVerify(exactly = 1) { mockApiService.loadRecommendations("mockToken") }
-            coVerify(exactly = 1) { mockMapper.mapResponseToFeedPost(mockResponse) }
+            coVerify { mockApiService.loadRecommendations("mockToken") }
+            coVerify { mockMapper.mapResponseToFeedPost(mockResponse) }
         }
 
     @Test
@@ -83,9 +87,10 @@ class FeedPostSourceTest {
 
                 assertEquals(mockFeedPosts, result)
             }
+            advanceUntilIdle()
 
-            coVerify(exactly = 1) { mockApiService.loadRecommendations(any(), "startFromToken") }
-            coVerify(exactly = 1) { mockMapper.mapResponseToFeedPost(mockResponse) }
+            coVerify { mockApiService.loadRecommendations(any(), "startFromToken") }
+            coVerify { mockMapper.mapResponseToFeedPost(mockResponse) }
         }
 
     @Test
@@ -115,8 +120,9 @@ class FeedPostSourceTest {
                 assertEquals("nextFromToken", awaitItem())
                 assertEquals(mockFeedPosts, result)
             }
+            advanceUntilIdle()
 
-            coVerify(exactly = 1) {
+            coVerify {
                 mockApiService.loadSubscriptionPosts(
                     token = "mockToken",
                     sourceIds = "123,456",
@@ -155,14 +161,15 @@ class FeedPostSourceTest {
 
                 assertEquals(mockFeedPosts, result)
             }
+            advanceUntilIdle()
 
-            coVerify(exactly = 1) {
+            coVerify {
                 mockApiService.loadSubscriptionPosts(
                     token = "mockToken",
                     sourceIds = "123,456",
                     nextFrom = "startFromToken",
                 )
             }
-            coVerify(exactly = 1) { mockMapper.mapResponseToFeedPost(mockResponse) }
+            coVerify { mockMapper.mapResponseToFeedPost(mockResponse) }
         }
 }

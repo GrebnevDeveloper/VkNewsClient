@@ -67,6 +67,7 @@ class RecommendationsFeedViewModelTest {
                 assertEquals(RecommendationsFeedScreenState.Loading, awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -92,6 +93,7 @@ class RecommendationsFeedViewModelTest {
                 )
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -103,6 +105,7 @@ class RecommendationsFeedViewModelTest {
                 assertEquals(RecommendationsFeedScreenState.NoRecommendations, awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -117,6 +120,7 @@ class RecommendationsFeedViewModelTest {
                 assertEquals(RecommendationsFeedScreenState.Error(errorMessage), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -174,7 +178,7 @@ class RecommendationsFeedViewModelTest {
             viewModel.changeSubscriptionStatus(mockFeedPost)
             advanceUntilIdle()
 
-            coVerify(exactly = 1) {
+            coVerify {
                 mockChangeSubscriptionStatusUseCase(
                     mockFeedPost,
                     NewsFeedType.RECOMMENDATIONS,

@@ -35,12 +35,7 @@ class CommentsPostRepositoryImplTest {
 
     private lateinit var repository: CommentsPostRepositoryImpl
     private lateinit var retryTrigger: MutableSharedFlow<Unit>
-
-    private val mockFeedPost =
-        mockk<FeedPost> {
-            every { id } returns 1L
-            every { communityId } returns 123L
-        }
+    private lateinit var mockFeedPost: FeedPost
 
     @Before
     fun setUp() {
@@ -53,6 +48,11 @@ class CommentsPostRepositoryImplTest {
 
         retryTrigger = MutableSharedFlow(replay = 1)
         repository = CommentsPostRepositoryImpl(mockApiService, mockMapper, mockAccessToken)
+        mockFeedPost =
+            mockk<FeedPost> {
+                every { id } returns 1L
+                every { communityId } returns 123L
+            }
     }
 
     @Test
@@ -65,6 +65,7 @@ class CommentsPostRepositoryImplTest {
                 assertEquals(ResultState.Initial, awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -85,6 +86,7 @@ class CommentsPostRepositoryImplTest {
                 assertEquals(ResultState.Success(mockComments), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -99,6 +101,7 @@ class CommentsPostRepositoryImplTest {
                 assertEquals(ResultState.Empty, awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -120,6 +123,8 @@ class CommentsPostRepositoryImplTest {
                 assertEquals(ResultState.Success(mockComments), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
+
             coVerify { mockApiService.loadComments("mockToken", 123L, 1L) }
         }
 
@@ -138,6 +143,7 @@ class CommentsPostRepositoryImplTest {
                 assertEquals(ResultState.Initial, awaitItem())
                 assertEquals(ResultState.Error(errorType), awaitItem())
             }
+            advanceUntilIdle()
 
             coVerify(exactly = 4) { mockApiService.loadComments("mockToken", 123L, 1L) }
             verify(exactly = 1) { ErrorHandler.getErrorType(exception) }
