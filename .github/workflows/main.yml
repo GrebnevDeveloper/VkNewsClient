@@ -24,24 +24,18 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-        working-directory: ./vknewsclient
 
       - name: Build with Gradle
         run: ./gradlew assembleDebug
-        working-directory: ./vknewsclient
 
       - name: Run Ktlint
         run: ./gradlew ktlintCheck
-        working-directory: ./vknewsclient
 
       - name: Run Detekt
         run: ./gradlew detekt
-        working-directory: ./vknewsclient
 
       - name: Run Unit Tests
         run: ./gradlew test
-        working-directory: ./vknewsclient
 
       - name: Build Debug APK
         run: ./gradlew assembleDebug
-        working-directory: ./vknewsclient
