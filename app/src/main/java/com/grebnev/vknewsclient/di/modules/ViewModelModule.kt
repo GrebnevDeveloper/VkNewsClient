@@ -12,7 +12,6 @@ import dagger.multibindings.IntoMap
 
 @Module
 interface ViewModelModule {
-
     @IntoMap
     @ViewModelKey(RecommendationsFeedViewModel::class)
     @Binds

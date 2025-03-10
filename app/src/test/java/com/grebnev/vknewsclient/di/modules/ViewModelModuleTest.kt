@@ -12,36 +12,23 @@ import org.junit.Before
 import org.junit.Test
 
 class ViewModelModuleTest {
-
     private lateinit var viewModelModule: ViewModelModule
 
     @Before
     fun setUp() {
-        viewModelModule = object : ViewModelModule {
-            override fun bindNewsFeedViewModel(
-                viewModel: RecommendationsFeedViewModel
-            ): ViewModel {
-                return viewModel
-            }
+        viewModelModule =
+            object : ViewModelModule {
+                override fun bindNewsFeedViewModel(viewModel: RecommendationsFeedViewModel): ViewModel =
+                    viewModel
 
-            override fun bindSubscriptionsFeedViewModel(
-                viewModel: SubscriptionsFeedViewModel
-            ): ViewModel {
-                return viewModel
-            }
+                override fun bindSubscriptionsFeedViewModel(
+                    viewModel: SubscriptionsFeedViewModel,
+                ): ViewModel = viewModel
 
-            override fun bindMainViewModel(
-                viewModel: MainViewModel
-            ): ViewModel {
-                return viewModel
-            }
+                override fun bindMainViewModel(viewModel: MainViewModel): ViewModel = viewModel
 
-            override fun bindProfileInfoViewModel(
-                viewModel: ProfileInfoViewModel
-            ): ViewModel {
-                return viewModel
+                override fun bindProfileInfoViewModel(viewModel: ProfileInfoViewModel): ViewModel = viewModel
             }
-        }
     }
 
     @Test

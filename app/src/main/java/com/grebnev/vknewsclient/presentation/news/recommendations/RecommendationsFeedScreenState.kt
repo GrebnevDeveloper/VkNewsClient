@@ -11,10 +11,10 @@ sealed class RecommendationsFeedScreenState {
 
     data class Posts(
         val posts: List<FeedPost>,
-        val nextDataLoading: Boolean = false
+        val nextDataLoading: Boolean = false,
     ) : RecommendationsFeedScreenState()
 
     data class Error(
-        val message: String
+        val message: String,
     ) : RecommendationsFeedScreenState()
 }

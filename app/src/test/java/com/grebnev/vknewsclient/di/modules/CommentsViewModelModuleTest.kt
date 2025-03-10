@@ -11,11 +11,10 @@ class CommentsViewModelModuleTest {
     @Test
     fun `bindCommentsViewModel should return viewModel instance`() {
         val mockCommentsViewModel = mockk<CommentsViewModel>()
-        val commentsViewModelModule = object : CommentsViewModelModule {
-            override fun bindCommentsViewModel(viewModel: CommentsViewModel): ViewModel {
-                return viewModel
+        val commentsViewModelModule =
+            object : CommentsViewModelModule {
+                override fun bindCommentsViewModel(viewModel: CommentsViewModel): ViewModel = viewModel
             }
-        }
 
         val viewModel = commentsViewModelModule.bindCommentsViewModel(mockCommentsViewModel)
 

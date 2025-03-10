@@ -39,7 +39,7 @@ fun FeedPosts(
     posts: List<FeedPost>,
     onCommentClickListener: (FeedPost) -> Unit,
     nextDataIsLoading: Boolean,
-    titleTopBar: String
+    titleTopBar: String,
 ) {
     val errorMessage by viewModel.errorMessage.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -59,14 +59,15 @@ fun FeedPosts(
         snackbarHost = {
             SnackbarHost(
                 hostState = snackbarHostState,
-                modifier = Modifier
-                    .padding(bottom = 76.dp)
+                modifier =
+                    Modifier
+                        .padding(bottom = 76.dp),
             )
         },
         content = { paddingValues ->
             LazyColumn(
                 modifier = Modifier.padding(paddingValues),
-                verticalArrangement = Arrangement.spacedBy(5.dp)
+                verticalArrangement = Arrangement.spacedBy(5.dp),
             ) {
                 items(posts, key = { it.id }) { feedPost ->
                     val dismissState = rememberSwipeToDismissBoxState()
@@ -78,7 +79,7 @@ fun FeedPosts(
                         modifier = Modifier.animateItem(),
                         state = dismissState,
                         enableDismissFromStartToEnd = false,
-                        backgroundContent = {}
+                        backgroundContent = {},
                     ) {
                         PostCard(
                             feedPost = feedPost,
@@ -90,18 +91,19 @@ fun FeedPosts(
                             },
                             onSubscribeClickListener = {
                                 viewModel.changeSubscriptionStatus(feedPost)
-                            }
+                            },
                         )
                     }
                 }
                 item {
                     if (nextDataIsLoading) {
                         Box(
-                            modifier = Modifier
-                                .padding(bottom = 100.dp)
-                                .fillMaxWidth()
-                                .wrapContentHeight(),
-                            contentAlignment = Alignment.Center
+                            modifier =
+                                Modifier
+                                    .padding(bottom = 100.dp)
+                                    .fillMaxWidth()
+                                    .wrapContentHeight(),
+                            contentAlignment = Alignment.Center,
                         ) {
                             CircularProgressIndicator(color = DarkBlue)
                         }
@@ -112,18 +114,16 @@ fun FeedPosts(
                     }
                 }
             }
-        }
+        },
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TopBar(
-    titleTopBar: String
-) {
+private fun TopBar(titleTopBar: String) {
     TopAppBar(
         title = {
             Text(titleTopBar)
-        }
+        },
     )
 }

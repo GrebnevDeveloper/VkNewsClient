@@ -14,11 +14,10 @@ import dagger.Component
         AppModule::class,
         NetworkModule::class,
         RepositoryModule::class,
-        ViewModelModule::class
-    ]
+        ViewModelModule::class,
+    ],
 )
 interface ApplicationComponent {
-
     fun getViewModelFactory(): ViewModelFactory
 
     fun getCommentsComponentFactory(): CommentsComponent.Factory

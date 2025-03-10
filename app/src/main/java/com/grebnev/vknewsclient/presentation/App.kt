@@ -10,11 +10,10 @@ import com.grebnev.vknewsclient.di.modules.AppModule
 import com.vk.id.VKID
 import timber.log.Timber
 
-
 class App : Application() {
-
     val component: ApplicationComponent by lazy {
-        DaggerApplicationComponent.builder()
+        DaggerApplicationComponent
+            .builder()
             .appModule(AppModule(this))
             .build()
     }
@@ -29,6 +28,5 @@ class App : Application() {
 }
 
 @Composable
-fun getApplicationComponent(): ApplicationComponent {
-    return (LocalContext.current.applicationContext as App).component
-}
+fun getApplicationComponent(): ApplicationComponent =
+    (LocalContext.current.applicationContext as App).component

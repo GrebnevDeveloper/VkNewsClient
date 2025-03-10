@@ -12,7 +12,7 @@ import com.grebnev.vknewsclient.ui.theme.DarkBlue
 fun LoadingIndicator() {
     Box(
         modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         CircularProgressIndicator(color = DarkBlue)
     }

@@ -5,5 +5,5 @@ import com.grebnev.vknewsclient.data.model.profile.ProfileDto
 
 data class CommentsContentDto(
     @SerializedName("items") val comments: List<CommentDto>,
-    @SerializedName("profiles") val profiles: List<ProfileDto>
+    @SerializedName("profiles") val profiles: List<ProfileDto>,
 )

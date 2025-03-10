@@ -5,12 +5,17 @@ import com.grebnev.vknewsclient.domain.entity.FeedPost
 import com.grebnev.vknewsclient.domain.repository.NewsFeedRepository
 import javax.inject.Inject
 
-class DeletePostUseCase @Inject constructor(
-    private val repositories: Map<NewsFeedType, @JvmSuppressWildcards NewsFeedRepository>
-) {
-    suspend operator fun invoke(feedPost: FeedPost, type: NewsFeedType) {
-        val repository =
-            repositories[type] ?: throw IllegalArgumentException("Unknown repository type: $type")
-        repository.deletePost(feedPost)
+class DeletePostUseCase
+    @Inject
+    constructor(
+        private val repositories: Map<NewsFeedType, @JvmSuppressWildcards NewsFeedRepository>,
+    ) {
+        suspend operator fun invoke(
+            feedPost: FeedPost,
+            type: NewsFeedType,
+        ) {
+            val repository =
+                repositories[type] ?: throw IllegalArgumentException("Unknown repository type: $type")
+            repository.deletePost(feedPost)
+        }
     }
-}

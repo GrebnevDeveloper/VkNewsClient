@@ -9,15 +9,16 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ApplicationComponentTest {
-
     @Test
     fun `getViewModelFactory should return instance of ViewModelFactory`() {
         val mockAppModule = mockk<AppModule>()
         val mockNetworkModule = mockk<NetworkModule>()
-        val component = DaggerApplicationComponent.builder()
-            .appModule(mockAppModule)
-            .networkModule(mockNetworkModule)
-            .build()
+        val component =
+            DaggerApplicationComponent
+                .builder()
+                .appModule(mockAppModule)
+                .networkModule(mockNetworkModule)
+                .build()
 
         val viewModelFactory = component.getViewModelFactory()
 
@@ -29,10 +30,12 @@ class ApplicationComponentTest {
     fun `getCommentsComponentFactory should return instance of CommentsComponent Factory`() {
         val mockAppModule = mockk<AppModule>()
         val mockNetworkModule = mockk<NetworkModule>()
-        val component = DaggerApplicationComponent.builder()
-            .appModule(mockAppModule)
-            .networkModule(mockNetworkModule)
-            .build()
+        val component =
+            DaggerApplicationComponent
+                .builder()
+                .appModule(mockAppModule)
+                .networkModule(mockNetworkModule)
+                .build()
 
         val commentsComponentFactory = component.getCommentsComponentFactory()
 

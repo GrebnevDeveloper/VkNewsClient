@@ -28,11 +28,8 @@ import com.grebnev.vknewsclient.presentation.news.recommendations.Recommendation
 import com.grebnev.vknewsclient.presentation.news.subscriptions.SubscriptionsFeedScreen
 import com.grebnev.vknewsclient.presentation.profile.ProfileInfoScreen
 
-
 @Composable
-fun VkNewsMainScreen(
-    onLogout: () -> Unit
-) {
+fun VkNewsMainScreen(onLogout: () -> Unit) {
     val navigationState = rememberNavigationState()
 
     Scaffold(
@@ -45,7 +42,7 @@ fun VkNewsMainScreen(
                         paddingValues = paddingValues,
                         onCommentClickListener = {
                             navigationState.navigateToComments(it)
-                        }
+                        },
                     )
                 },
                 commentsScreenContent = { feedPost ->
@@ -53,7 +50,7 @@ fun VkNewsMainScreen(
                         feedPost = feedPost,
                         onBackPressed = {
                             navigationState.navHostController.popBackStack()
-                        }
+                        },
                     )
                 },
                 subscriptionsFeedScreenContent = {
@@ -61,14 +58,14 @@ fun VkNewsMainScreen(
                         paddingValues = paddingValues,
                         onCommentClickListener = {
                             navigationState.navigateToComments(it)
-                        }
+                        },
                     )
                 },
                 profileScreenContent = {
                     ProfileInfoScreen(onLogout = onLogout)
-                }
+                },
             )
-        }
+        },
     )
 }
 
@@ -81,33 +78,31 @@ private fun TextCounter(name: String) {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
     ) {
         Text(
             modifier = Modifier.clickable { count++ },
-            text = "$name count: $count"
+            text = "$name count: $count",
         )
     }
-
 }
 
 @Composable
-private fun NavigationBottomBar(
-    navigationState: NavigationState
-) {
-
+private fun NavigationBottomBar(navigationState: NavigationState) {
     val navBackStackEntry by navigationState.navHostController.currentBackStackEntryAsState()
 
     NavigationBar {
-        val items = listOf(
-            NavigationItem.Home,
-            NavigationItem.Favourite,
-            NavigationItem.Profile
-        )
-        items.forEach() { item ->
-            val selected = navBackStackEntry?.destination?.hierarchy?.any() {
-                it.route == item.screen.route
-            } ?: false
+        val items =
+            listOf(
+                NavigationItem.Home,
+                NavigationItem.Favourite,
+                NavigationItem.Profile,
+            )
+        items.forEach { item ->
+            val selected =
+                navBackStackEntry?.destination?.hierarchy?.any {
+                    it.route == item.screen.route
+                } ?: false
 
             NavigationBarItem(
                 selected = selected,
@@ -121,7 +116,7 @@ private fun NavigationBottomBar(
                 },
                 label = {
                     Text(stringResource(item.titleResId))
-                }
+                },
             )
         }
     }

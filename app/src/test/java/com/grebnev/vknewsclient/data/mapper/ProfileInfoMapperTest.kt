@@ -12,15 +12,17 @@ class ProfileInfoMapperTest {
 
     @Test
     fun `mapResponseToProfileInfo should map ProfileInfoResponseDto to ProfileInfo`() {
-        val profile= mockk<ProfileInfoDto> {
-            every { id } returns 1L
-            every { avatarUrl } returns "https://example.com/avatar.jpg"
-            every { firstName } returns "John"
-            every { lastName } returns "Doe"
-        }
-        val response = mockk<ProfileInfoResponseDto> {
-            every { profileInfo } returns profile
-        }
+        val profile =
+            mockk<ProfileInfoDto> {
+                every { id } returns 1L
+                every { avatarUrl } returns "https://example.com/avatar.jpg"
+                every { firstName } returns "John"
+                every { lastName } returns "Doe"
+            }
+        val response =
+            mockk<ProfileInfoResponseDto> {
+                every { profileInfo } returns profile
+            }
 
         val result = profileInfoMapper.mapResponseToProfileInfo(response)
 

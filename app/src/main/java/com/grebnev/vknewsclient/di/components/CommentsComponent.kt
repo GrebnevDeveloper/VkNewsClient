@@ -8,15 +8,16 @@ import dagger.Subcomponent
 
 @Subcomponent(
     modules = [
-        CommentsViewModelModule::class
-    ]
+        CommentsViewModelModule::class,
+    ],
 )
 interface CommentsComponent {
-
     fun getViewModuleFactory(): ViewModelFactory
 
     @Subcomponent.Factory
     interface Factory {
-        fun create(@BindsInstance feedPost: FeedPost): CommentsComponent
+        fun create(
+            @BindsInstance feedPost: FeedPost,
+        ): CommentsComponent
     }
 }

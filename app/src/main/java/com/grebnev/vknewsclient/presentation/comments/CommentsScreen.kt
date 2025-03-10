@@ -45,18 +45,19 @@ import com.grebnev.vknewsclient.presentation.getApplicationComponent
 @Composable
 fun CommentsScreen(
     feedPost: FeedPost,
-    onBackPressed: () -> Unit
+    onBackPressed: () -> Unit,
 ) {
-    val component = getApplicationComponent()
-        .getCommentsComponentFactory()
-        .create(feedPost)
+    val component =
+        getApplicationComponent()
+            .getCommentsComponentFactory()
+            .create(feedPost)
 
     val viewModel: CommentsViewModel = viewModel(factory = component.getViewModuleFactory())
     val screenState = viewModel.screenState.collectAsState(CommentsScreenState.Initial)
     CommentsScreenContent(
         screenState = screenState,
         onBackPressed = onBackPressed,
-        viewModel = viewModel
+        viewModel = viewModel,
     )
 }
 
@@ -64,13 +65,13 @@ fun CommentsScreen(
 private fun CommentsScreenContent(
     screenState: State<CommentsScreenState>,
     onBackPressed: () -> Unit,
-    viewModel: CommentsViewModel
+    viewModel: CommentsViewModel,
 ) {
     when (val currentState = screenState.value) {
         is CommentsScreenState.Comments -> {
             PostComments(
                 comments = currentState.comments,
-                onBackPressed = onBackPressed
+                onBackPressed = onBackPressed,
             )
         }
 
@@ -82,7 +83,6 @@ private fun CommentsScreenContent(
         }
 
         is CommentsScreenState.Initial -> {
-
         }
 
         is CommentsScreenState.Loading -> {
@@ -92,7 +92,7 @@ private fun CommentsScreenContent(
         is CommentsScreenState.NoComments -> {
             Box(
                 modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Text(stringResource(R.string.no_comments))
             }
@@ -104,7 +104,7 @@ private fun CommentsScreenContent(
 @Composable
 private fun PostComments(
     comments: List<PostComment>,
-    onBackPressed: () -> Unit
+    onBackPressed: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -114,26 +114,27 @@ private fun PostComments(
                 },
                 navigationIcon = {
                     IconButton(
-                        onClick = { onBackPressed() }
+                        onClick = { onBackPressed() },
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null
+                            contentDescription = null,
                         )
                     }
-                }
+                },
             )
-        }
+        },
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier.padding(paddingValues),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(
-                top = 16.dp,
-                start = 8.dp,
-                end = 8.dp,
-                bottom = 72.dp
-            )
+            contentPadding =
+                PaddingValues(
+                    top = 16.dp,
+                    start = 8.dp,
+                    end = 8.dp,
+                    bottom = 72.dp,
+                ),
         ) {
             items(items = comments, key = { it.id }) { comment ->
                 CommentItem(comment)
@@ -145,38 +146,40 @@ private fun PostComments(
 @Composable
 private fun CommentItem(comment: PostComment) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(
-                horizontal = 16.dp,
-                vertical = 4.dp
-            )
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(
+                    horizontal = 16.dp,
+                    vertical = 4.dp,
+                ),
     ) {
         AsyncImage(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape),
+            modifier =
+                Modifier
+                    .size(40.dp)
+                    .clip(CircleShape),
             model = comment.authorAvatarUrl,
-            contentDescription = null
+            contentDescription = null,
         )
         Spacer(modifier = Modifier.width(8.dp))
         Column {
             Text(
                 text = comment.authorName,
                 color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 12.sp
+                fontSize = 12.sp,
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = comment.commentText,
                 color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 14.sp
+                fontSize = 14.sp,
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = comment.publicationDate,
                 color = MaterialTheme.colorScheme.onSecondary,
-                fontSize = 12.sp
+                fontSize = 12.sp,
             )
         }
     }

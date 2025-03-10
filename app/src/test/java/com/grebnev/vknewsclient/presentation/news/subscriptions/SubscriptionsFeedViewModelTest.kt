@@ -46,33 +46,36 @@ class SubscriptionsFeedViewModelTest {
         subscriptionsStateFlow = MutableStateFlow(ResultState.Initial)
         coEvery { mockGetSubscriptionPostsUseCase() } returns subscriptionsStateFlow
 
-        viewModel = SubscriptionsFeedViewModel(
-            getSubscriptionPostsUseCase = mockGetSubscriptionPostsUseCase,
-            loadNextDataUseCase = mockLoadNextDataUseCase,
-            changeLikeStatusUseCase = mockChangeLikeStatusUseCase,
-            deletePostUseCase = mockDeletePostUseCase,
-            changeSubscriptionStatusUseCase = mockChangeSubscriptionStatusUseCase,
-            errorMessageProvider = mockErrorMessageProvider
-        )
+        viewModel =
+            SubscriptionsFeedViewModel(
+                getSubscriptionPostsUseCase = mockGetSubscriptionPostsUseCase,
+                loadNextDataUseCase = mockLoadNextDataUseCase,
+                changeLikeStatusUseCase = mockChangeLikeStatusUseCase,
+                deletePostUseCase = mockDeletePostUseCase,
+                changeSubscriptionStatusUseCase = mockChangeSubscriptionStatusUseCase,
+                errorMessageProvider = mockErrorMessageProvider,
+            )
     }
 
     @Test
-    fun `screenState should emit Loading initially`() = runTest {
-        subscriptionsStateFlow.emit(ResultState.Initial)
+    fun `screenState should emit Loading initially`() =
+        runTest {
+            subscriptionsStateFlow.emit(ResultState.Initial)
 
-        viewModel.screenState.test {
-            assertEquals(SubscriptionsScreenState.Loading, awaitItem())
-            cancelAndIgnoreRemainingEvents()
+            viewModel.screenState.test {
+                assertEquals(SubscriptionsScreenState.Loading, awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
         }
-    }
 
     @Test
     fun `screenState should emit Posts state when useCase returns Success with non-empty list`() =
         runTest {
-            val mockFeedPosts = listOf(
-                mockk<FeedPost>(),
-                mockk<FeedPost>()
-            )
+            val mockFeedPosts =
+                listOf(
+                    mockk<FeedPost>(),
+                    mockk<FeedPost>(),
+                )
             subscriptionsStateFlow.emit(ResultState.Success(mockFeedPosts))
 
             viewModel.screenState.test {
@@ -82,93 +85,100 @@ class SubscriptionsFeedViewModelTest {
         }
 
     @Test
-    fun `screenState should emit NoSubscriptions state when useCase returns Empty`() = runTest {
-        subscriptionsStateFlow.emit(ResultState.Empty)
+    fun `screenState should emit NoSubscriptions state when useCase returns Empty`() =
+        runTest {
+            subscriptionsStateFlow.emit(ResultState.Empty)
 
-        viewModel.screenState.test {
-            assertEquals(SubscriptionsScreenState.NoSubscriptions, awaitItem())
-            cancelAndIgnoreRemainingEvents()
+            viewModel.screenState.test {
+                assertEquals(SubscriptionsScreenState.NoSubscriptions, awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
         }
-    }
 
     @Test
-    fun `screenState should emit Error state when useCase returns Error`() = runTest {
-        val errorType = ErrorType.NETWORK_ERROR
-        val errorMessage = "Network error"
-        coEvery { mockErrorMessageProvider.getErrorMessage(errorType) } returns errorMessage
+    fun `screenState should emit Error state when useCase returns Error`() =
+        runTest {
+            val errorType = ErrorType.NETWORK_ERROR
+            val errorMessage = "Network error"
+            coEvery { mockErrorMessageProvider.getErrorMessage(errorType) } returns errorMessage
 
-        subscriptionsStateFlow.emit(ResultState.Error(errorType))
+            subscriptionsStateFlow.emit(ResultState.Error(errorType))
 
-        viewModel.screenState.test {
-            assertEquals(SubscriptionsScreenState.Error(errorMessage), awaitItem())
-            cancelAndIgnoreRemainingEvents()
+            viewModel.screenState.test {
+                assertEquals(SubscriptionsScreenState.Error(errorMessage), awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
         }
-    }
 
     @Test
-    fun `loadNextPosts should call loadNextDataUseCase`() = runTest {
-        val mockFeedPosts = listOf(
-            mockk<FeedPost>()
-        )
-        subscriptionsStateFlow.emit(ResultState.Success(mockFeedPosts))
-        coEvery { mockLoadNextDataUseCase(NewsFeedType.SUBSCRIPTIONS) } returns Unit
+    fun `loadNextPosts should call loadNextDataUseCase`() =
+        runTest {
+            val mockFeedPosts =
+                listOf(
+                    mockk<FeedPost>(),
+                )
+            subscriptionsStateFlow.emit(ResultState.Success(mockFeedPosts))
+            coEvery { mockLoadNextDataUseCase(NewsFeedType.SUBSCRIPTIONS) } returns Unit
 
-        viewModel.loadNextPosts()
-        advanceUntilIdle()
+            viewModel.loadNextPosts()
+            advanceUntilIdle()
 
-        coVerify(exactly = 1) { mockLoadNextDataUseCase(NewsFeedType.SUBSCRIPTIONS) }
-    }
-
-    @Test
-    fun `changeLikeStatus should call changeLikeStatusUseCase`() = runTest {
-        val mockFeedPost = mockk<FeedPost>()
-        coEvery {
-            mockChangeLikeStatusUseCase(
-                mockFeedPost,
-                NewsFeedType.SUBSCRIPTIONS
-            )
-        } returns Unit
-
-        viewModel.changeLikeStatus(mockFeedPost)
-        advanceUntilIdle()
-
-        coVerify {
-            mockChangeLikeStatusUseCase(
-                mockFeedPost,
-                NewsFeedType.SUBSCRIPTIONS
-            )
+            coVerify(exactly = 1) { mockLoadNextDataUseCase(NewsFeedType.SUBSCRIPTIONS) }
         }
-    }
 
     @Test
-    fun `changeSubscriptionStatus should call changeSubscriptionStatusUseCase`() = runTest {
-        val mockFeedPost = mockk<FeedPost>()
-        coEvery {
-            mockChangeSubscriptionStatusUseCase(
-                mockFeedPost,
-                NewsFeedType.SUBSCRIPTIONS
-            )
-        } returns Unit
+    fun `changeLikeStatus should call changeLikeStatusUseCase`() =
+        runTest {
+            val mockFeedPost = mockk<FeedPost>()
+            coEvery {
+                mockChangeLikeStatusUseCase(
+                    mockFeedPost,
+                    NewsFeedType.SUBSCRIPTIONS,
+                )
+            } returns Unit
 
-        viewModel.changeSubscriptionStatus(mockFeedPost)
-        advanceUntilIdle()
+            viewModel.changeLikeStatus(mockFeedPost)
+            advanceUntilIdle()
 
-        coVerify {
-            mockChangeSubscriptionStatusUseCase(
-                mockFeedPost,
-                NewsFeedType.SUBSCRIPTIONS
-            )
+            coVerify {
+                mockChangeLikeStatusUseCase(
+                    mockFeedPost,
+                    NewsFeedType.SUBSCRIPTIONS,
+                )
+            }
         }
-    }
 
     @Test
-    fun `delete should call deletePostUseCase`() = runTest {
-        val mockFeedPost = mockk<FeedPost>()
-        coEvery { mockDeletePostUseCase(mockFeedPost, NewsFeedType.SUBSCRIPTIONS) } returns Unit
+    fun `changeSubscriptionStatus should call changeSubscriptionStatusUseCase`() =
+        runTest {
+            val mockFeedPost = mockk<FeedPost>()
+            coEvery {
+                mockChangeSubscriptionStatusUseCase(
+                    mockFeedPost,
+                    NewsFeedType.SUBSCRIPTIONS,
+                )
+            } returns Unit
 
-        viewModel.delete(mockFeedPost)
-        advanceUntilIdle()
+            viewModel.changeSubscriptionStatus(mockFeedPost)
+            advanceUntilIdle()
 
-        coVerify { mockDeletePostUseCase(mockFeedPost, NewsFeedType.SUBSCRIPTIONS) }
-    }
+            coVerify {
+                mockChangeSubscriptionStatusUseCase(
+                    mockFeedPost,
+                    NewsFeedType.SUBSCRIPTIONS,
+                )
+            }
+        }
+
+    @Test
+    fun `delete should call deletePostUseCase`() =
+        runTest {
+            val mockFeedPost = mockk<FeedPost>()
+            coEvery { mockDeletePostUseCase(mockFeedPost, NewsFeedType.SUBSCRIPTIONS) } returns Unit
+
+            viewModel.delete(mockFeedPost)
+            advanceUntilIdle()
+
+            coVerify { mockDeletePostUseCase(mockFeedPost, NewsFeedType.SUBSCRIPTIONS) }
+        }
 }

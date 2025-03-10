@@ -29,7 +29,6 @@ import kotlin.time.Duration.Companion.seconds
 
 @ExperimentalCoroutinesApi
 class CommentsPostRepositoryImplTest {
-
     private lateinit var mockApiService: ApiService
     private lateinit var mockMapper: NewsFeedMapper
     private lateinit var mockAccessToken: AccessTokenSource
@@ -37,106 +36,112 @@ class CommentsPostRepositoryImplTest {
     private lateinit var repository: CommentsPostRepositoryImpl
     private lateinit var retryTrigger: MutableSharedFlow<Unit>
 
-    private val mockFeedPost = mockk<FeedPost> {
-        every { id } returns 1L
-        every { communityId } returns 123L
-    }
+    private val mockFeedPost =
+        mockk<FeedPost> {
+            every { id } returns 1L
+            every { communityId } returns 123L
+        }
 
     @Before
     fun setUp() {
         mockApiService = mockk()
         mockMapper = mockk()
-        mockAccessToken = mockk {
-            coEvery { getAccessToken() } returns "mockToken"
-        }
+        mockAccessToken =
+            mockk {
+                coEvery { getAccessToken() } returns "mockToken"
+            }
 
         retryTrigger = MutableSharedFlow(replay = 1)
         repository = CommentsPostRepositoryImpl(mockApiService, mockMapper, mockAccessToken)
     }
 
     @Test
-    fun `getComments should emit Loading initially`() = runTest {
-        coEvery { mockApiService.loadComments(any(), 123L, 1L) } returns mockk()
-        coEvery { mockMapper.mapResponseToPostComment(any()) } returns emptyList()
+    fun `getComments should emit Loading initially`() =
+        runTest {
+            coEvery { mockApiService.loadComments(any(), 123L, 1L) } returns mockk()
+            coEvery { mockMapper.mapResponseToPostComment(any()) } returns emptyList()
 
-        repository.getComments(mockFeedPost).test {
-            assertEquals(ResultState.Initial, awaitItem())
-            cancelAndIgnoreRemainingEvents()
+            repository.getComments(mockFeedPost).test {
+                assertEquals(ResultState.Initial, awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
         }
-    }
 
     @Test
-    fun `getComments should emit Success state when apiService returns valid response`() = runTest {
-        val mockCommentsResponse = mockk<CommentsResponseDto>()
-        val mockComments = listOf(
-            mockk<PostComment>(),
-            mockk<PostComment>()
-        )
+    fun `getComments should emit Success state when apiService returns valid response`() =
+        runTest {
+            val mockCommentsResponse = mockk<CommentsResponseDto>()
+            val mockComments =
+                listOf(
+                    mockk<PostComment>(),
+                    mockk<PostComment>(),
+                )
 
-        coEvery { mockApiService.loadComments(any(), 123L, 1L) } returns mockCommentsResponse
-        coEvery { mockMapper.mapResponseToPostComment(mockCommentsResponse) } returns mockComments
+            coEvery { mockApiService.loadComments(any(), 123L, 1L) } returns mockCommentsResponse
+            coEvery { mockMapper.mapResponseToPostComment(mockCommentsResponse) } returns mockComments
 
-        repository.getComments(mockFeedPost).test {
-            assertEquals(ResultState.Initial, awaitItem())
-            assertEquals(ResultState.Success(mockComments), awaitItem())
-            cancelAndIgnoreRemainingEvents()
+            repository.getComments(mockFeedPost).test {
+                assertEquals(ResultState.Initial, awaitItem())
+                assertEquals(ResultState.Success(mockComments), awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
         }
-    }
 
     @Test
-    fun `getComments should emit Empty state when apiService returns empty list`() = runTest {
-        val mockCommentsResponse = mockk<CommentsResponseDto>()
-        coEvery { mockApiService.loadComments(any(), 123L, 1L) } returns mockCommentsResponse
-        coEvery { mockMapper.mapResponseToPostComment(mockCommentsResponse) } returns emptyList()
+    fun `getComments should emit Empty state when apiService returns empty list`() =
+        runTest {
+            val mockCommentsResponse = mockk<CommentsResponseDto>()
+            coEvery { mockApiService.loadComments(any(), 123L, 1L) } returns mockCommentsResponse
+            coEvery { mockMapper.mapResponseToPostComment(mockCommentsResponse) } returns emptyList()
 
-        repository.getComments(mockFeedPost).test {
-            assertEquals(ResultState.Initial, awaitItem())
-            assertEquals(ResultState.Empty, awaitItem())
-            cancelAndIgnoreRemainingEvents()
+            repository.getComments(mockFeedPost).test {
+                assertEquals(ResultState.Initial, awaitItem())
+                assertEquals(ResultState.Empty, awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
         }
-    }
 
     @Test
-    fun `retry should trigger new request and emit Success state`() = runTest {
-        val mockCommentsResponse = mockk<CommentsResponseDto>()
-        val mockComments = listOf(
-            mockk<PostComment>()
-        )
+    fun `retry should trigger new request and emit Success state`() =
+        runTest {
+            val mockCommentsResponse = mockk<CommentsResponseDto>()
+            val mockComments =
+                listOf(
+                    mockk<PostComment>(),
+                )
 
-        coEvery { mockApiService.loadComments(any(), 123L, 1L) } returns mockCommentsResponse
-        coEvery { mockMapper.mapResponseToPostComment(mockCommentsResponse) } returns mockComments
+            coEvery { mockApiService.loadComments(any(), 123L, 1L) } returns mockCommentsResponse
+            coEvery { mockMapper.mapResponseToPostComment(mockCommentsResponse) } returns mockComments
 
-
-        repository.getComments(mockFeedPost).test {
-            assertEquals(ResultState.Initial, awaitItem())
-            repository.retry()
-            advanceUntilIdle()
-            assertEquals(ResultState.Success(mockComments), awaitItem())
-            cancelAndIgnoreRemainingEvents()
+            repository.getComments(mockFeedPost).test {
+                assertEquals(ResultState.Initial, awaitItem())
+                repository.retry()
+                advanceUntilIdle()
+                assertEquals(ResultState.Success(mockComments), awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
+            coVerify { mockApiService.loadComments("mockToken", 123L, 1L) }
         }
-        coVerify { mockApiService.loadComments("mockToken", 123L, 1L) }
-    }
 
     @Test
-    fun `getComments should emit Error when API call fails`() = runTest {
-        mockkObject(ErrorHandler)
+    fun `getComments should emit Error when API call fails`() =
+        runTest {
+            mockkObject(ErrorHandler)
 
-        val exception = IOException("Network error")
-        val errorType = ErrorType.NETWORK_ERROR
+            val exception = IOException("Network error")
+            val errorType = ErrorType.NETWORK_ERROR
 
-        coEvery { mockApiService.loadComments(any(), 123L, 1L) } throws exception
-        every { ErrorHandler.getErrorType(exception) } returns errorType
+            coEvery { mockApiService.loadComments(any(), 123L, 1L) } throws exception
+            every { ErrorHandler.getErrorType(exception) } returns errorType
 
+            repository.getComments(mockFeedPost).test(timeout = 13.seconds) {
+                assertEquals(ResultState.Initial, awaitItem())
+                assertEquals(ResultState.Error(errorType), awaitItem())
+            }
 
-        repository.getComments(mockFeedPost).test(timeout = 13.seconds) {
-            assertEquals(ResultState.Initial, awaitItem())
-            assertEquals(ResultState.Error(errorType), awaitItem())
+            coVerify(exactly = 4) { mockApiService.loadComments("mockToken", 123L, 1L) }
+            verify(exactly = 1) { ErrorHandler.getErrorType(exception) }
+
+            unmockkObject(ErrorHandler)
         }
-
-
-        coVerify(exactly = 4) { mockApiService.loadComments("mockToken", 123L, 1L)  }
-        verify(exactly = 1) { ErrorHandler.getErrorType(exception) }
-
-        unmockkObject(ErrorHandler)
-    }
 }

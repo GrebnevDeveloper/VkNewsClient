@@ -17,7 +17,6 @@ import org.junit.Before
 import org.junit.Test
 
 class LikeStatusSourceTest {
-
     private lateinit var likesStatusSource: LikesStatusSource
     private lateinit var mockApiService: ApiService
     private lateinit var mockAccessToken: AccessTokenSource
@@ -26,98 +25,101 @@ class LikeStatusSourceTest {
     @Before
     fun setUp() {
         mockApiService = mockk()
-        mockAccessToken = mockk {
-            coEvery { getAccessToken() } returns "mockToken"
-        }
+        mockAccessToken =
+            mockk {
+                coEvery { getAccessToken() } returns "mockToken"
+            }
 
-        mockFeedPost = mockk {
-            every { isLiked } returns true
-            every { communityId } returns 123
-            every { id } returns 456
-            every { statisticsList } returns listOf(
-                StatisticItem(StatisticType.LIKES, 10),
-                StatisticItem(StatisticType.VIEWS, 100)
-            )
-            every {
-                copy(
-                    id = any(),
-                    communityId = any(),
-                    communityName = any(),
-                    publicationDate = any(),
-                    communityImageUrl = any(),
-                    contentText = any(),
-                    contentImageUrl = any(),
-                    statisticsList = any(),
-                    isLiked = any(),
-                    isSubscribed = any()
-                )
-            } answers {
-                mockk {
-                    every { statisticsList } returns arg(7)
-                    every { isLiked } returns arg(8)
+        mockFeedPost =
+            mockk {
+                every { isLiked } returns true
+                every { communityId } returns 123
+                every { id } returns 456
+                every { statisticsList } returns
+                    listOf(
+                        StatisticItem(StatisticType.LIKES, 10),
+                        StatisticItem(StatisticType.VIEWS, 100),
+                    )
+                every {
+                    copy(
+                        id = any(),
+                        communityId = any(),
+                        communityName = any(),
+                        publicationDate = any(),
+                        communityImageUrl = any(),
+                        contentText = any(),
+                        contentImageUrl = any(),
+                        statisticsList = any(),
+                        isLiked = any(),
+                        isSubscribed = any(),
+                    )
+                } answers {
+                    mockk {
+                        every { statisticsList } returns arg(7)
+                        every { isLiked } returns arg(8)
+                    }
                 }
             }
-        }
         likesStatusSource = LikesStatusSource(mockApiService, mockAccessToken)
     }
 
     @Test
-    fun `changeLikeStatus should add like and update FeedPost when post is not liked`() = runTest {
-        every { mockFeedPost.isLiked } returns false
-        val mockResponse = mockk<LikesCountResponseDto> {
-            every { likes.count } returns 11
+    fun `changeLikeStatus should add like and update FeedPost when post is not liked`() =
+        runTest {
+            every { mockFeedPost.isLiked } returns false
+            val mockResponse =
+                mockk<LikesCountResponseDto> {
+                    every { likes.count } returns 11
+                }
+            coEvery {
+                mockApiService.addLike(
+                    token = any(),
+                    ownerId = 123,
+                    postId = 456,
+                )
+            } returns mockResponse
+
+            val updatedFeedPost = likesStatusSource.changeLikeStatus(mockFeedPost)
+
+            assertEquals(11, updatedFeedPost.statisticsList.find { it.type == StatisticType.LIKES }?.count)
+            assertTrue(updatedFeedPost.isLiked)
+
+            coVerify {
+                mockApiService.addLike(
+                    token = "mockToken",
+                    ownerId = 123,
+                    postId = 456,
+                )
+            }
         }
-        coEvery {
-            mockApiService.addLike(
-                token = any(),
-                ownerId = 123,
-                postId = 456
-            )
-        } returns mockResponse
-
-
-        val updatedFeedPost = likesStatusSource.changeLikeStatus(mockFeedPost)
-
-
-        assertEquals(11, updatedFeedPost.statisticsList.find { it.type == StatisticType.LIKES }?.count)
-        assertTrue(updatedFeedPost.isLiked)
-
-        coVerify {
-            mockApiService.addLike(
-                token = "mockToken",
-                ownerId = 123,
-                postId = 456
-            )
-        }
-    }
 
     @Test
-    fun `changeLikeStatus should remove like and update FeedPost when post is already liked`() = runTest {
-        every { mockFeedPost.isLiked } returns true
-        val mockResponse = mockk<LikesCountResponseDto> {
-            every { likes.count } returns 9
+    fun `changeLikeStatus should remove like and update FeedPost when post is already liked`() =
+        runTest {
+            every { mockFeedPost.isLiked } returns true
+            val mockResponse =
+                mockk<LikesCountResponseDto> {
+                    every { likes.count } returns 9
+                }
+            coEvery {
+                mockApiService.deleteLike(
+                    token = any(),
+                    ownerId = 123,
+                    postId = 456,
+                )
+            } returns mockResponse
+
+            val updatedFeedPost = likesStatusSource.changeLikeStatus(mockFeedPost)
+
+            assertEquals(9, updatedFeedPost.statisticsList.find { it.type == StatisticType.LIKES }?.count)
+            assertFalse(updatedFeedPost.isLiked)
+
+            coVerify {
+                mockApiService.deleteLike(
+                    token = "mockToken",
+                    ownerId = 123,
+                    postId = 456,
+                )
+            }
         }
-        coEvery {
-            mockApiService.deleteLike(
-                token = any(),
-                ownerId = 123,
-                postId = 456
-            )
-        } returns mockResponse
-
-
-        val updatedFeedPost = likesStatusSource.changeLikeStatus(mockFeedPost)
-
-
-        assertEquals(9, updatedFeedPost.statisticsList.find { it.type == StatisticType.LIKES }?.count)
-        assertFalse(updatedFeedPost.isLiked)
-
-        coVerify {
-            mockApiService.deleteLike(
-                token = "mockToken",
-                ownerId = 123,
-                postId = 456
-            )
-        }
-    }
 }

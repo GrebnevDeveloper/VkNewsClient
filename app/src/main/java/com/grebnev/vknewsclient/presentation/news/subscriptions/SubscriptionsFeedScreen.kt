@@ -21,7 +21,7 @@ import com.grebnev.vknewsclient.presentation.news.base.FeedPosts
 @Composable
 fun SubscriptionsFeedScreen(
     paddingValues: PaddingValues,
-    onCommentClickListener: (FeedPost) -> Unit
+    onCommentClickListener: (FeedPost) -> Unit,
 ) {
     val component = getApplicationComponent()
     val viewModel: SubscriptionsFeedViewModel = viewModel(factory = component.getViewModelFactory())
@@ -30,7 +30,7 @@ fun SubscriptionsFeedScreen(
         screenState = screenState,
         paddingValues = paddingValues,
         onCommentClickListener = onCommentClickListener,
-        viewModel = viewModel
+        viewModel = viewModel,
     )
 }
 
@@ -39,7 +39,7 @@ private fun SubscriptionsFeedScreenContent(
     screenState: State<SubscriptionsScreenState>,
     paddingValues: PaddingValues,
     onCommentClickListener: (FeedPost) -> Unit,
-    viewModel: SubscriptionsFeedViewModel
+    viewModel: SubscriptionsFeedViewModel,
 ) {
     when (val currentState = screenState.value) {
         is SubscriptionsScreenState.Posts -> {
@@ -49,7 +49,7 @@ private fun SubscriptionsFeedScreenContent(
                 posts = currentState.posts.distinctBy { it.id },
                 onCommentClickListener = onCommentClickListener,
                 nextDataIsLoading = currentState.nextDataLoading,
-                titleTopBar = stringResource(R.string.subscriptions)
+                titleTopBar = stringResource(R.string.subscriptions),
             )
         }
 
@@ -60,7 +60,7 @@ private fun SubscriptionsFeedScreenContent(
         is SubscriptionsScreenState.NoSubscriptions -> {
             Box(
                 modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Text(stringResource(R.string.no_subscriptions))
             }
@@ -68,7 +68,7 @@ private fun SubscriptionsFeedScreenContent(
 
         is SubscriptionsScreenState.Error -> {
             ErrorScreenWithLoading(
-                errorMessage = currentState.message
+                errorMessage = currentState.message,
             )
         }
 

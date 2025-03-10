@@ -20,7 +20,6 @@ import org.junit.Test
 
 @ExperimentalCoroutinesApi
 class CommentsViewModelTest {
-
     private lateinit var mockGetCommentsUseCase: GetCommentsUseCase
     private lateinit var mockErrorMessageProvider: ErrorMessageProvider
 
@@ -37,71 +36,78 @@ class CommentsViewModelTest {
         commentsStateFlow = MutableStateFlow(ResultState.Initial)
         coEvery { mockGetCommentsUseCase.getCommentsPost(mockFeedPost) } returns commentsStateFlow
 
-        viewModel = CommentsViewModel(
-            feedPost = mockFeedPost,
-            getCommentsUseCase = mockGetCommentsUseCase,
-            errorMessage = mockErrorMessageProvider
-        )
+        viewModel =
+            CommentsViewModel(
+                feedPost = mockFeedPost,
+                getCommentsUseCase = mockGetCommentsUseCase,
+                errorMessage = mockErrorMessageProvider,
+            )
     }
 
     @Test
-    fun `screenState should emit Loading initially`() = runTest {
-        commentsStateFlow.emit(ResultState.Initial)
+    fun `screenState should emit Loading initially`() =
+        runTest {
+            commentsStateFlow.emit(ResultState.Initial)
 
-        viewModel.screenState.test {
-            assertEquals(CommentsScreenState.Loading, awaitItem())
-            cancelAndIgnoreRemainingEvents()
+            viewModel.screenState.test {
+                assertEquals(CommentsScreenState.Loading, awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
         }
-    }
 
     @Test
-    fun `screenState should emit Comments state when useCase returns Success`() = runTest {
-        val mockComments = listOf(
-            mockk<PostComment>(),
-            mockk<PostComment>()
-        )
-        commentsStateFlow.emit(ResultState.Success(mockComments))
+    fun `screenState should emit Comments state when useCase returns Success`() =
+        runTest {
+            val mockComments =
+                listOf(
+                    mockk<PostComment>(),
+                    mockk<PostComment>(),
+                )
+            commentsStateFlow.emit(ResultState.Success(mockComments))
 
-        viewModel.screenState.test {
-            assertEquals(CommentsScreenState.Comments(mockFeedPost, mockComments), awaitItem())
-            cancelAndIgnoreRemainingEvents()
+            viewModel.screenState.test {
+                assertEquals(CommentsScreenState.Comments(mockFeedPost, mockComments), awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
         }
-    }
 
     @Test
-    fun `screenState should emit NoComments state when useCase returns Empty`() = runTest {
-        commentsStateFlow.emit(ResultState.Empty)
+    fun `screenState should emit NoComments state when useCase returns Empty`() =
+        runTest {
+            commentsStateFlow.emit(ResultState.Empty)
 
-        viewModel.screenState.test {
-            assertEquals(CommentsScreenState.NoComments, awaitItem())
-            cancelAndIgnoreRemainingEvents()
+            viewModel.screenState.test {
+                assertEquals(CommentsScreenState.NoComments, awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
         }
-    }
 
     @Test
-    fun `screenState should emit Error state when useCase returns Error`() = runTest {
-        val errorType = ErrorType.NETWORK_ERROR
-        val errorMessage = "Network error"
-        coEvery { mockErrorMessageProvider.getErrorMessage(errorType) } returns errorMessage
-        commentsStateFlow.emit(ResultState.Error(errorType))
+    fun `screenState should emit Error state when useCase returns Error`() =
+        runTest {
+            val errorType = ErrorType.NETWORK_ERROR
+            val errorMessage = "Network error"
+            coEvery { mockErrorMessageProvider.getErrorMessage(errorType) } returns errorMessage
+            commentsStateFlow.emit(ResultState.Error(errorType))
 
-        viewModel.screenState.test {
-            assertEquals(CommentsScreenState.Error(errorMessage), awaitItem())
-            cancelAndIgnoreRemainingEvents()
+            viewModel.screenState.test {
+                assertEquals(CommentsScreenState.Error(errorMessage), awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
         }
-    }
 
     @Test
-    fun `refreshedCommentsPost should emit Loading and call retry`() = runTest {
-        coEvery { mockGetCommentsUseCase.retry() } returns Unit
+    fun `refreshedCommentsPost should emit Loading and call retry`() =
+        runTest {
+            coEvery { mockGetCommentsUseCase.retry() } returns Unit
 
-        viewModel.screenState.test {
-            commentsStateFlow.emit(ResultState.Error(mockk()))
-            viewModel.refreshedCommentsPost()
-            advanceUntilIdle()
-            assertEquals(CommentsScreenState.Loading, awaitItem())
-            cancelAndIgnoreRemainingEvents()
+            viewModel.screenState.test {
+                commentsStateFlow.emit(ResultState.Error(mockk()))
+                viewModel.refreshedCommentsPost()
+                advanceUntilIdle()
+                assertEquals(CommentsScreenState.Loading, awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
+            coVerify(exactly = 1) { mockGetCommentsUseCase.retry() }
         }
-        coVerify(exactly = 1) { mockGetCommentsUseCase.retry() }
-    }
 }

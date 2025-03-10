@@ -10,7 +10,6 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-
 class AppModuleTest {
     @Test
     fun `provideApplication should return the application instance passed to AppModule`() {
