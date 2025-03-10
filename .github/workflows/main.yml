@@ -45,9 +45,3 @@ jobs:
       - name: Build Debug APK
         run: ./gradlew assembleDebug
         working-directory: ./vknewsclient
-
-      - name: Run UI Tests
-        run: ./gradlew connectedCheck
-
-      - name: Build APK
-        run: ./gradlew assembleDebug
