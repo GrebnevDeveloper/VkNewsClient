@@ -22,6 +22,11 @@ jobs:
           java-version: '17'
           distribution: 'zulu'
 
+      - name: Create secrets.properties
+        run: |
+          echo "VKIDClientID = ${{ secrets.VKID_CLIENT_ID }}" > app/secrets.properties
+          echo "VKIDClientSecret = ${{ secrets.VKID_CLIENT_SECRET }}" >> app/secrets.properties
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
