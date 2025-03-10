@@ -5,12 +5,16 @@ import com.google.gson.Gson
 import com.grebnev.vknewsclient.domain.entity.FeedPost
 
 sealed class Screen(
-    val route: String
+    val route: String,
 ) {
     data object RecommendationsHome : Screen(ROUTE_RECOMMENDATIONS_HOME)
+
     data object SubscriptionsFeed : Screen(ROUTE_SUBSCRIPTIONS_FEED)
+
     data object RecommendationsFeed : Screen(ROUTE_RECOMMENDATIONS_FEED)
+
     data object Subscriptions : Screen(ROUTE_SUBSCRIPTIONS)
+
     data object Profile : Screen(ROUTE_PROFILE)
 
     data object Comments : Screen(ROUTE_COMMENTS) {

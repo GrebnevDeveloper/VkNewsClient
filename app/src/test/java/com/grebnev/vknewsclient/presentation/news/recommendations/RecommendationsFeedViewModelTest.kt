@@ -25,7 +25,6 @@ import org.junit.Test
 
 @ExperimentalCoroutinesApi
 class RecommendationsFeedViewModelTest {
-
     private lateinit var mockGetRecommendationsUseCase: GetRecommendationsUseCase
     private lateinit var mockLoadNextDataUseCase: LoadNextDataUseCase
     private lateinit var mockChangeLikeStatusUseCase: ChangeLikeStatusUseCase
@@ -48,140 +47,150 @@ class RecommendationsFeedViewModelTest {
         recommendationsStateFlow = MutableStateFlow(ResultState.Initial)
         coEvery { mockGetRecommendationsUseCase() } returns recommendationsStateFlow
 
-        viewModel = RecommendationsFeedViewModel(
-            getRecommendationsUseCase = mockGetRecommendationsUseCase,
-            loadNextDataUseCase = mockLoadNextDataUseCase,
-            changeLikeStatusUseCase = mockChangeLikeStatusUseCase,
-            deletePostUseCase = mockDeletePostUseCase,
-            changeSubscriptionStatusUseCase = mockChangeSubscriptionStatusUseCase,
-            errorMessageProvider = mockErrorMessageProvider
-        )
+        viewModel =
+            RecommendationsFeedViewModel(
+                getRecommendationsUseCase = mockGetRecommendationsUseCase,
+                loadNextDataUseCase = mockLoadNextDataUseCase,
+                changeLikeStatusUseCase = mockChangeLikeStatusUseCase,
+                deletePostUseCase = mockDeletePostUseCase,
+                changeSubscriptionStatusUseCase = mockChangeSubscriptionStatusUseCase,
+                errorMessageProvider = mockErrorMessageProvider,
+            )
     }
 
     @Test
-    fun `screenState should emit Loading initially`() = runTest {
-        recommendationsStateFlow.emit(ResultState.Initial)
+    fun `screenState should emit Loading initially`() =
+        runTest {
+            recommendationsStateFlow.emit(ResultState.Initial)
 
-        viewModel.screenState.test {
-            assertEquals(RecommendationsFeedScreenState.Loading, awaitItem())
-            cancelAndIgnoreRemainingEvents()
+            viewModel.screenState.test {
+                assertEquals(RecommendationsFeedScreenState.Loading, awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
         }
-    }
 
     @Test
     fun `screenState should emit Posts state when useCase returns Success with non-empty list`() =
         runTest {
-            val mockFeedPosts = listOf(
-                mockk<FeedPost> {
-                    every { id } returns 1L
-                    every { contentText } returns "Post 1"
-                },
-                mockk<FeedPost> {
-                    every { id } returns 2L
-                    every { contentText } returns "Post 2"
-                }
-            )
+            val mockFeedPosts =
+                listOf(
+                    mockk<FeedPost> {
+                        every { id } returns 1L
+                        every { contentText } returns "Post 1"
+                    },
+                    mockk<FeedPost> {
+                        every { id } returns 2L
+                        every { contentText } returns "Post 2"
+                    },
+                )
             recommendationsStateFlow.emit(ResultState.Success(mockFeedPosts))
 
             viewModel.screenState.test {
                 assertEquals(
                     RecommendationsFeedScreenState.Posts(mockFeedPosts),
-                    awaitItem()
+                    awaitItem(),
                 )
                 cancelAndIgnoreRemainingEvents()
             }
         }
 
     @Test
-    fun `screenState should emit NoRecommendations state when useCase returns Empty`() = runTest {
-        recommendationsStateFlow.emit(ResultState.Empty)
+    fun `screenState should emit NoRecommendations state when useCase returns Empty`() =
+        runTest {
+            recommendationsStateFlow.emit(ResultState.Empty)
 
-        viewModel.screenState.test {
-            assertEquals(RecommendationsFeedScreenState.NoRecommendations, awaitItem())
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
-    fun `screenState should emit Error state when useCase returns Error`() = runTest {
-        val errorType = ErrorType.NETWORK_ERROR
-        val errorMessage = "Network error"
-        coEvery { mockErrorMessageProvider.getErrorMessage(errorType) } returns errorMessage
-        recommendationsStateFlow.emit(ResultState.Error(errorType))
-
-        viewModel.screenState.test {
-            assertEquals(RecommendationsFeedScreenState.Error(errorMessage), awaitItem())
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
-    fun `loadNextPosts should call loadNextDataUseCase`() = runTest {
-        val mockFeedPosts = listOf(
-            mockk<FeedPost> {
-                every { id } returns 1L
-                every { contentText } returns "Post 1"
+            viewModel.screenState.test {
+                assertEquals(RecommendationsFeedScreenState.NoRecommendations, awaitItem())
+                cancelAndIgnoreRemainingEvents()
             }
-        )
-        coEvery { mockLoadNextDataUseCase(NewsFeedType.RECOMMENDATIONS) } returns Unit
-        recommendationsStateFlow.emit(ResultState.Success(mockFeedPosts))
-
-        viewModel.loadNextPosts()
-        advanceUntilIdle()
-
-        coVerify(exactly = 1) { mockLoadNextDataUseCase(NewsFeedType.RECOMMENDATIONS) }
-    }
-
-    @Test
-    fun `changeLikeStatus should call changeLikeStatusUseCase`() = runTest {
-        val mockFeedPost = mockk<FeedPost>()
-        coEvery {
-            mockChangeLikeStatusUseCase(
-                mockFeedPost,
-                NewsFeedType.RECOMMENDATIONS
-            )
-        } returns Unit
-
-        viewModel.changeLikeStatus(mockFeedPost)
-        advanceUntilIdle()
-
-        coVerify {
-            mockChangeLikeStatusUseCase(
-                mockFeedPost,
-                NewsFeedType.RECOMMENDATIONS
-            )
         }
-    }
 
     @Test
-    fun `changeSubscriptionStatus should call changeSubscriptionStatusUseCase`() = runTest {
-        val mockFeedPost = mockk<FeedPost>()
-        coEvery {
-            mockChangeSubscriptionStatusUseCase(
-                mockFeedPost,
-                NewsFeedType.RECOMMENDATIONS
-            )
-        } returns Unit
+    fun `screenState should emit Error state when useCase returns Error`() =
+        runTest {
+            val errorType = ErrorType.NETWORK_ERROR
+            val errorMessage = "Network error"
+            coEvery { mockErrorMessageProvider.getErrorMessage(errorType) } returns errorMessage
+            recommendationsStateFlow.emit(ResultState.Error(errorType))
 
-        viewModel.changeSubscriptionStatus(mockFeedPost)
-        advanceUntilIdle()
-
-        coVerify(exactly = 1) {
-            mockChangeSubscriptionStatusUseCase(
-                mockFeedPost,
-                NewsFeedType.RECOMMENDATIONS
-            )
+            viewModel.screenState.test {
+                assertEquals(RecommendationsFeedScreenState.Error(errorMessage), awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
         }
-    }
 
     @Test
-    fun `delete should call deletePostUseCase`() = runTest {
-        val mockFeedPost = mockk<FeedPost>()
-        coEvery { mockDeletePostUseCase(mockFeedPost, NewsFeedType.RECOMMENDATIONS) } returns Unit
+    fun `loadNextPosts should call loadNextDataUseCase`() =
+        runTest {
+            val mockFeedPosts =
+                listOf(
+                    mockk<FeedPost> {
+                        every { id } returns 1L
+                        every { contentText } returns "Post 1"
+                    },
+                )
+            coEvery { mockLoadNextDataUseCase(NewsFeedType.RECOMMENDATIONS) } returns Unit
+            recommendationsStateFlow.emit(ResultState.Success(mockFeedPosts))
 
-        viewModel.delete(mockFeedPost)
-        advanceUntilIdle()
+            viewModel.loadNextPosts()
+            advanceUntilIdle()
 
-        coVerify { mockDeletePostUseCase(mockFeedPost, NewsFeedType.RECOMMENDATIONS) }
-    }
+            coVerify { mockLoadNextDataUseCase(NewsFeedType.RECOMMENDATIONS) }
+        }
+
+    @Test
+    fun `changeLikeStatus should call changeLikeStatusUseCase`() =
+        runTest {
+            val mockFeedPost = mockk<FeedPost>()
+            coEvery {
+                mockChangeLikeStatusUseCase(
+                    mockFeedPost,
+                    NewsFeedType.RECOMMENDATIONS,
+                )
+            } returns Unit
+
+            viewModel.changeLikeStatus(mockFeedPost)
+            advanceUntilIdle()
+
+            coVerify {
+                mockChangeLikeStatusUseCase(
+                    mockFeedPost,
+                    NewsFeedType.RECOMMENDATIONS,
+                )
+            }
+        }
+
+    @Test
+    fun `changeSubscriptionStatus should call changeSubscriptionStatusUseCase`() =
+        runTest {
+            val mockFeedPost = mockk<FeedPost>()
+            coEvery {
+                mockChangeSubscriptionStatusUseCase(
+                    mockFeedPost,
+                    NewsFeedType.RECOMMENDATIONS,
+                )
+            } returns Unit
+
+            viewModel.changeSubscriptionStatus(mockFeedPost)
+            advanceUntilIdle()
+
+            coVerify(exactly = 1) {
+                mockChangeSubscriptionStatusUseCase(
+                    mockFeedPost,
+                    NewsFeedType.RECOMMENDATIONS,
+                )
+            }
+        }
+
+    @Test
+    fun `delete should call deletePostUseCase`() =
+        runTest {
+            val mockFeedPost = mockk<FeedPost>()
+            coEvery { mockDeletePostUseCase(mockFeedPost, NewsFeedType.RECOMMENDATIONS) } returns Unit
+
+            viewModel.delete(mockFeedPost)
+            advanceUntilIdle()
+
+            coVerify { mockDeletePostUseCase(mockFeedPost, NewsFeedType.RECOMMENDATIONS) }
+        }
 }

@@ -19,7 +19,6 @@ import org.junit.Before
 import org.junit.Test
 
 class ProfileInfoViewModelTest {
-
     private lateinit var mockProfileInfoUseCase: GetProfileInfoUseCase
     private lateinit var mockErrorMessageProvider: ErrorMessageProvider
 
@@ -36,59 +35,64 @@ class ProfileInfoViewModelTest {
     }
 
     @Test
-    fun `screenState should emit Loading initially`() = runTest {
-        profileInfoStateFlow.emit(ResultState.Initial)
+    fun `screenState should emit Loading initially`() =
+        runTest {
+            profileInfoStateFlow.emit(ResultState.Initial)
 
-        viewModel.screenState.test {
-            assertEquals(ProfileInfoScreenState.Loading, awaitItem())
-            cancelAndIgnoreRemainingEvents()
+            viewModel.screenState.test {
+                assertEquals(ProfileInfoScreenState.Loading, awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
         }
-    }
 
     @Test
-    fun `screenState should emit Profile state when useCase returns Success`() = runTest {
-        val mockProfileInfo = mockk<ProfileInfo> {
-            every { id } returns 1L
-            every { avatarUrl } returns "https://example.com/avatar.jpg"
-            every { firstName } returns "John"
-            every { lastName } returns "Doe"
-        }
+    fun `screenState should emit Profile state when useCase returns Success`() =
+        runTest {
+            val mockProfileInfo =
+                mockk<ProfileInfo> {
+                    every { id } returns 1L
+                    every { avatarUrl } returns "https://example.com/avatar.jpg"
+                    every { firstName } returns "John"
+                    every { lastName } returns "Doe"
+                }
 
-        profileInfoStateFlow.emit(ResultState.Success(mockProfileInfo))
+            profileInfoStateFlow.emit(ResultState.Success(mockProfileInfo))
 
-        viewModel.screenState.test {
-            assertEquals(ProfileInfoScreenState.Profile(mockProfileInfo), awaitItem())
-            cancelAndIgnoreRemainingEvents()
+            viewModel.screenState.test {
+                assertEquals(ProfileInfoScreenState.Profile(mockProfileInfo), awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
         }
-    }
 
     @Test
-    fun `screenState should emit Error state when useCase returns Error`() = runTest {
-        val errorType = ErrorType.NETWORK_ERROR
-        val errorMessage = "Network error"
-        coEvery { mockErrorMessageProvider.getErrorMessage(errorType) } returns errorMessage
+    fun `screenState should emit Error state when useCase returns Error`() =
+        runTest {
+            val errorType = ErrorType.NETWORK_ERROR
+            val errorMessage = "Network error"
+            coEvery { mockErrorMessageProvider.getErrorMessage(errorType) } returns errorMessage
 
-        profileInfoStateFlow.emit(ResultState.Error(errorType))
+            profileInfoStateFlow.emit(ResultState.Error(errorType))
 
-        viewModel.screenState.test {
-            assertEquals(ProfileInfoScreenState.Error(errorMessage), awaitItem())
-            cancelAndIgnoreRemainingEvents()
+            viewModel.screenState.test {
+                assertEquals(ProfileInfoScreenState.Error(errorMessage), awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
         }
-    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `refreshedProfileInfo should emit Loading and trigger retry`() = runTest {
-        coEvery { mockProfileInfoUseCase.retry() } returns Unit
+    fun `refreshedProfileInfo should emit Loading and trigger retry`() =
+        runTest {
+            coEvery { mockProfileInfoUseCase.retry() } returns Unit
 
-        viewModel.screenState.test {
-            profileInfoStateFlow.emit(ResultState.Error(mockk()))
-            viewModel.refreshedProfileInfo()
-            advanceUntilIdle()
-            assertEquals(ProfileInfoScreenState.Loading, awaitItem())
-            cancelAndIgnoreRemainingEvents()
+            viewModel.screenState.test {
+                profileInfoStateFlow.emit(ResultState.Error(mockk()))
+                viewModel.refreshedProfileInfo()
+                advanceUntilIdle()
+                assertEquals(ProfileInfoScreenState.Loading, awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
+
+            coVerify(exactly = 1) { mockProfileInfoUseCase.retry() }
         }
-
-        coVerify(exactly = 1) { mockProfileInfoUseCase.retry() }
-    }
 }

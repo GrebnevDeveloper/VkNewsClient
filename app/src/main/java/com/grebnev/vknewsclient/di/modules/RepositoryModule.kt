@@ -18,34 +18,25 @@ import dagger.multibindings.IntoMap
 
 @Module
 interface RepositoryModule {
+    @ApplicationScope
+    @Binds
+    fun bindRecommendationsFeedRepository(impl: RecommendationsFeedRepositoryImpl): RecommendationsFeedRepository
 
     @ApplicationScope
     @Binds
-    fun bindRecommendationsFeedRepository(
-        impl: RecommendationsFeedRepositoryImpl
-    ): RecommendationsFeedRepository
-
-    @ApplicationScope
-    @Binds
-    fun bindSubscriptionsFeedRepository(
-        impl: SubscriptionsFeedRepositoryImpl
-    ): SubscriptionsFeedRepository
+    fun bindSubscriptionsFeedRepository(impl: SubscriptionsFeedRepositoryImpl): SubscriptionsFeedRepository
 
     @ApplicationScope
     @Binds
     @IntoMap
     @NewsFeedTypeKey(NewsFeedType.RECOMMENDATIONS)
-    fun bindRecommendationsToNewsFeedRepository(
-        impl: RecommendationsFeedRepositoryImpl
-    ): NewsFeedRepository
+    fun bindRecommendationsToNewsFeedRepository(impl: RecommendationsFeedRepositoryImpl): NewsFeedRepository
 
     @ApplicationScope
     @Binds
     @IntoMap
     @NewsFeedTypeKey(NewsFeedType.SUBSCRIPTIONS)
-    fun bindSubscriptionsToNewsFeedRepository(
-        impl: SubscriptionsFeedRepositoryImpl
-    ): NewsFeedRepository
+    fun bindSubscriptionsToNewsFeedRepository(impl: SubscriptionsFeedRepositoryImpl): NewsFeedRepository
 
     @ApplicationScope
     @Binds

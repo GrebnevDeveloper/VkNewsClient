@@ -11,10 +11,10 @@ sealed class SubscriptionsScreenState {
 
     data class Posts(
         val posts: List<FeedPost>,
-        val nextDataLoading: Boolean = false
+        val nextDataLoading: Boolean = false,
     ) : SubscriptionsScreenState()
 
     data class Error(
-        val message: String
+        val message: String,
     ) : SubscriptionsScreenState()
 }

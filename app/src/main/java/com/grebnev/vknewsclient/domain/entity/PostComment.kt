@@ -5,5 +5,5 @@ data class PostComment(
     val authorAvatarUrl: String,
     val authorName: String,
     val commentText: String,
-    val publicationDate: String
+    val publicationDate: String,
 )

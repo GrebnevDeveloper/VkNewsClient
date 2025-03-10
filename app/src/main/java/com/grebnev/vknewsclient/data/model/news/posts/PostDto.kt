@@ -15,5 +15,5 @@ data class PostDto(
     @SerializedName("views") val views: ViewsDto?,
     @SerializedName("comments") val comments: CommentsDto?,
     @SerializedName("reposts") val reposts: RepostsDto?,
-    @SerializedName("attachments") val attachments: List<AttachmentDto>?
+    @SerializedName("attachments") val attachments: List<AttachmentDto>?,
 )

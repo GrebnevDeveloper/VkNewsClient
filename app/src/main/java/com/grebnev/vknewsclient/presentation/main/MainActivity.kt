@@ -32,12 +32,12 @@ class MainActivity : ComponentActivity() {
                                 (authState.value as AuthState.Authorized)
                                     .accessToken
                                     .token
-                            }"
+                            }",
                         )
                         VkNewsMainScreen(
                             onLogout = {
                                 viewModel.logout()
-                            }
+                            },
                         )
                     }
 
@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity() {
                                 (authState.value as AuthState.NotAuthorized)
                                     .fail
                                     .description
-                            }"
+                            }",
                         )
                         VkIdAuthScreen(
                             onSuccessAuth = { accessToken ->
@@ -57,7 +57,7 @@ class MainActivity : ComponentActivity() {
                             onFailureAuth = { fail ->
                                 viewModel.onFail(fail)
                                 Timber.d("Auth failure, token: ${fail.description}")
-                            }
+                            },
                         )
                     }
 

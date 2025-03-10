@@ -8,7 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import com.grebnev.vknewsclient.domain.entity.FeedPost
 
 class NavigationState(
-    val navHostController: NavHostController
+    val navHostController: NavHostController,
 ) {
     fun navigateTo(route: String) {
         navHostController.navigate(route) {
@@ -27,9 +27,8 @@ class NavigationState(
 
 @Composable
 fun rememberNavigationState(
-    navHostController: NavHostController = rememberNavController()
-): NavigationState {
-    return remember {
+    navHostController: NavHostController = rememberNavController(),
+): NavigationState =
+    remember {
         NavigationState(navHostController)
     }
-}

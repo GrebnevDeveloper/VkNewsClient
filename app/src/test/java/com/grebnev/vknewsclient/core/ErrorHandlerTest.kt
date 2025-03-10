@@ -8,7 +8,6 @@ import org.junit.Test
 import java.io.IOException
 
 class ErrorHandlerTest {
-
     @Test
     fun `getErrorType should return NETWORK_ERROR for IOException`() {
         val mockIOException: Throwable = mockk<IOException>()

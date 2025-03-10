@@ -8,8 +8,8 @@ object ErrorHandler {
     const val RETRY_TIMEOUT = 3000L
     const val MAX_COUNT_RETRY = 3L
 
-    fun getErrorType(throwable: Throwable): ErrorType {
-        return when (throwable) {
+    fun getErrorType(throwable: Throwable): ErrorType =
+        when (throwable) {
             is IOException -> {
                 Timber.e("Network exception")
                 ErrorType.NETWORK_ERROR
@@ -20,5 +20,4 @@ object ErrorHandler {
                 ErrorType.UNKNOWN_ERROR
             }
         }
-    }
 }

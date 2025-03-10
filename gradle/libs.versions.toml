@@ -14,25 +14,28 @@ composeBom = "2025.02.00"
 runtimeLivedata = "1.7.8"
 navigationCompose = "2.8.8"
 viewmodelCompose = "2.8.7"
-gson = "2.11.0"
-coil = "3.0.4"
-vkid = "1.0.0"
+gson = "2.12.1"
+coil = "3.1.0"
+vkid = "1.1.0"
 desugar = "2.1.5"
-vkidSdk = "2.2.1"
+vkidSdk = "2.3.1"
 onetap = "2.2.1"
 retrofit = "2.11.0"
 okhttpBom = "4.12.0"
 converterGson = "2.11.0"
-dagger = "2.54"
+dagger = "2.55"
 splashScreen = "1.0.1"
 timber = "5.0.1"
+ktlintPlugin = "12.2.0"
+ktlint = "1.5.0"
+detektPlugin = "1.23.8"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockK" }
-coroutines-test = { group ="org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutinesTest"}
-turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine"}
+coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutinesTest" }
+turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
@@ -63,6 +66,7 @@ dagger2 = { group = "com.google.dagger", name = "dagger", version.ref = "dagger"
 dagger2-compiler = { group = "com.google.dagger", name = "dagger-compiler", version.ref = "dagger" }
 androidx-splash = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashScreen" }
 timber-log = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+ktlint-rules = { group = "com.pinterest.ktlint", name = "ktlint-ruleset-standard", version.ref = "ktlint" }
 
 [bundles]
 network = ["squareup-retrofit", "okhttp3", "okhttp3-log", "google-gson", "converter-gson"]
@@ -77,4 +81,5 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 vkid-placeholders = { id = "vkid.manifest.placeholders", version.ref = "vkid" }
 kotlin-kapt = { id = "kotlin-kapt" }
-
+ktlint-analisis = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintPlugin" }
+detekt-analisis = { id = "io.gitlab.arturbosch.detekt", version.ref = "detektPlugin" }

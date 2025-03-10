@@ -7,11 +7,10 @@ sealed class AuthState {
     data object Initial : AuthState()
 
     data class Authorized(
-        val accessToken: AccessToken
+        val accessToken: AccessToken,
     ) : AuthState()
 
     data class NotAuthorized(
-        val fail: VKIDAuthFail
+        val fail: VKIDAuthFail,
     ) : AuthState()
-
 }

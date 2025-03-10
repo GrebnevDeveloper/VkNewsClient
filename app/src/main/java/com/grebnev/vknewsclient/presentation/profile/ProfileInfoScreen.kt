@@ -34,9 +34,7 @@ import com.grebnev.vknewsclient.presentation.getApplicationComponent
 import com.grebnev.vknewsclient.ui.theme.VkContainer
 
 @Composable
-fun ProfileInfoScreen(
-    onLogout: () -> Unit
-) {
+fun ProfileInfoScreen(onLogout: () -> Unit) {
     val component = getApplicationComponent()
     val viewModel: ProfileInfoViewModel = viewModel(factory = component.getViewModelFactory())
     val screenState = viewModel.screenState.collectAsState(ProfileInfoScreenState.Initial)
@@ -44,7 +42,7 @@ fun ProfileInfoScreen(
     ProfileInfoScreenContent(
         screenState = screenState,
         onLogout = onLogout,
-        viewModel = viewModel
+        viewModel = viewModel,
     )
 }
 
@@ -52,20 +50,20 @@ fun ProfileInfoScreen(
 private fun ProfileInfoScreenContent(
     screenState: State<ProfileInfoScreenState>,
     onLogout: () -> Unit,
-    viewModel: ProfileInfoViewModel
+    viewModel: ProfileInfoViewModel,
 ) {
     when (val currentState = screenState.value) {
         is ProfileInfoScreenState.Profile -> {
             ProfileInfo(
                 profileInfo = currentState.profileInfo,
-                onLogout = { onLogout() }
+                onLogout = { onLogout() },
             )
         }
 
         is ProfileInfoScreenState.Error -> {
             ErrorScreenWithRetry(
                 retry = { viewModel.refreshedProfileInfo() },
-                errorMessage = currentState.message
+                errorMessage = currentState.message,
             )
         }
 
@@ -80,55 +78,59 @@ private fun ProfileInfoScreenContent(
 @Composable
 private fun ProfileInfo(
     profileInfo: ProfileInfo,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(
-                horizontal = 16.dp,
-                vertical = 5.dp
-            ),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(
+                    horizontal = 16.dp,
+                    vertical = 5.dp,
+                ),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         AsyncImage(
             model = profileInfo.avatarUrl,
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight(),
-            contentDescription = "Avatar profile"
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+            contentDescription = "Avatar profile",
         )
         Spacer(modifier = Modifier.height(10.dp))
         Row {
             Text(
                 fontSize = 28.sp,
                 text = profileInfo.firstName,
-                color = MaterialTheme.colorScheme.onSecondary
+                color = MaterialTheme.colorScheme.onSecondary,
             )
             Spacer(modifier = Modifier.width(10.dp))
             Text(
                 fontSize = 28.sp,
                 text = profileInfo.lastName,
-                color = MaterialTheme.colorScheme.onSecondary
+                color = MaterialTheme.colorScheme.onSecondary,
             )
         }
         Spacer(modifier = Modifier.height(10.dp))
         Button(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .padding(10.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(10.dp),
             onClick = { onLogout() },
-            colors = ButtonColors(
-                containerColor = VkContainer,
-                contentColor = Color.White,
-                disabledContentColor = ButtonDefaults.buttonColors().disabledContentColor,
-                disabledContainerColor = ButtonDefaults.buttonColors().disabledContainerColor
-            )
+            colors =
+                ButtonColors(
+                    containerColor = VkContainer,
+                    contentColor = Color.White,
+                    disabledContentColor = ButtonDefaults.buttonColors().disabledContentColor,
+                    disabledContainerColor = ButtonDefaults.buttonColors().disabledContainerColor,
+                ),
         ) {
             Text(
-                text = stringResource(R.string.logout)
+                text = stringResource(R.string.logout),
             )
         }
     }

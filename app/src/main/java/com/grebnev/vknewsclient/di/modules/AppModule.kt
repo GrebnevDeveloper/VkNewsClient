@@ -7,10 +7,10 @@ import com.grebnev.vknewsclient.presentation.base.ErrorMessageProvider
 import dagger.Module
 import dagger.Provides
 
-
 @Module
-class AppModule(private val application: Application) {
-
+class AppModule(
+    private val application: Application,
+) {
     @ApplicationScope
     @Provides
     fun provideApplication(): Application = application

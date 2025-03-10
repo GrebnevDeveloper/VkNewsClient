@@ -10,13 +10,13 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class AccessTokenSourceTest {
-
     @Test
     fun `getAccessToken should return token when VKID provides a valid access token`() {
         mockkObject(VKID)
-        val mockAccessToken = mockk<AccessToken> {
-            every { token } returns "mockToken"
-        }
+        val mockAccessToken =
+            mockk<AccessToken> {
+                every { token } returns "mockToken"
+            }
         every { VKID.instance.accessToken } returns mockAccessToken
         val accessTokenSource = AccessTokenSource()
 

@@ -21,7 +21,7 @@ import com.grebnev.vknewsclient.presentation.news.base.FeedPosts
 @Composable
 fun RecommendationsFeedScreen(
     paddingValues: PaddingValues,
-    onCommentClickListener: (FeedPost) -> Unit
+    onCommentClickListener: (FeedPost) -> Unit,
 ) {
     val component = getApplicationComponent()
     val viewModel: RecommendationsFeedViewModel =
@@ -31,7 +31,7 @@ fun RecommendationsFeedScreen(
         screenState = screenState,
         paddingValues = paddingValues,
         onCommentClickListener = onCommentClickListener,
-        viewModel = viewModel
+        viewModel = viewModel,
     )
 }
 
@@ -40,7 +40,7 @@ private fun RecommendationsFeedScreenContent(
     screenState: State<RecommendationsFeedScreenState>,
     paddingValues: PaddingValues,
     onCommentClickListener: (FeedPost) -> Unit,
-    viewModel: RecommendationsFeedViewModel
+    viewModel: RecommendationsFeedViewModel,
 ) {
     when (val currentState = screenState.value) {
         is RecommendationsFeedScreenState.Posts -> {
@@ -50,7 +50,7 @@ private fun RecommendationsFeedScreenContent(
                 posts = currentState.posts.distinctBy { it.id },
                 onCommentClickListener = onCommentClickListener,
                 nextDataIsLoading = currentState.nextDataLoading,
-                titleTopBar = stringResource(R.string.recommendations)
+                titleTopBar = stringResource(R.string.recommendations),
             )
         }
 
@@ -61,7 +61,7 @@ private fun RecommendationsFeedScreenContent(
         is RecommendationsFeedScreenState.NoRecommendations -> {
             Box(
                 modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Text(stringResource(R.string.no_recommendations))
             }
@@ -69,7 +69,7 @@ private fun RecommendationsFeedScreenContent(
 
         is RecommendationsFeedScreenState.Error -> {
             ErrorScreenWithLoading(
-                errorMessage = currentState.message
+                errorMessage = currentState.message,
             )
         }
 

@@ -9,16 +9,11 @@ import dagger.Provides
 
 @Module
 class NetworkModule {
+    @ApplicationScope
+    @Provides
+    fun provideApiService(): ApiService = ApiFactory.apiService
 
     @ApplicationScope
     @Provides
-    fun provideApiService(): ApiService {
-        return ApiFactory.apiService
-    }
-
-    @ApplicationScope
-    @Provides
-    fun provideAccessToken(): AccessTokenSource {
-        return AccessTokenSource()
-    }
+    fun provideAccessToken(): AccessTokenSource = AccessTokenSource()
 }

@@ -16,48 +16,36 @@ import org.junit.Before
 import org.junit.Test
 
 class RepositoryModuleTest {
-
     private lateinit var repositoryModule: RepositoryModule
 
     @Before
     fun setUp() {
-        repositoryModule = object : RepositoryModule {
-            override fun bindRecommendationsFeedRepository(
-                impl: RecommendationsFeedRepositoryImpl
-            ): RecommendationsFeedRepository {
-                return impl
-            }
+        repositoryModule =
+            object : RepositoryModule {
+                override fun bindRecommendationsFeedRepository(
+                    impl: RecommendationsFeedRepositoryImpl,
+                ): RecommendationsFeedRepository = impl
 
-            override fun bindSubscriptionsFeedRepository(
-                impl: SubscriptionsFeedRepositoryImpl
-            ): SubscriptionsFeedRepository {
-                return impl
-            }
+                override fun bindSubscriptionsFeedRepository(
+                    impl: SubscriptionsFeedRepositoryImpl,
+                ): SubscriptionsFeedRepository = impl
 
-            override fun bindRecommendationsToNewsFeedRepository(
-                impl: RecommendationsFeedRepositoryImpl
-            ): NewsFeedRepository {
-                return impl
-            }
+                override fun bindRecommendationsToNewsFeedRepository(
+                    impl: RecommendationsFeedRepositoryImpl,
+                ): NewsFeedRepository = impl
 
-            override fun bindSubscriptionsToNewsFeedRepository(
-                impl: SubscriptionsFeedRepositoryImpl
-            ): NewsFeedRepository {
-                return impl
-            }
+                override fun bindSubscriptionsToNewsFeedRepository(
+                    impl: SubscriptionsFeedRepositoryImpl,
+                ): NewsFeedRepository = impl
 
-            override fun bindCommentsPostRepository(
-                impl: CommentsPostRepositoryImpl
-            ): CommentsPostRepository {
-                return impl
-            }
+                override fun bindCommentsPostRepository(
+                    impl: CommentsPostRepositoryImpl,
+                ): CommentsPostRepository = impl
 
-            override fun bindProfileInfoRepository(
-                impl: ProfileInfoRepositoryImpl
-            ): ProfileInfoRepository {
-                return impl
+                override fun bindProfileInfoRepository(
+                    impl: ProfileInfoRepositoryImpl,
+                ): ProfileInfoRepository = impl
             }
-        }
     }
 
     @Test

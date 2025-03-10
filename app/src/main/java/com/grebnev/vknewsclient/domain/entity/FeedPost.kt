@@ -13,5 +13,5 @@ data class FeedPost(
     val contentImageUrl: String?,
     val statisticsList: List<StatisticItem>,
     val isLiked: Boolean,
-    val isSubscribed: Boolean
+    val isSubscribed: Boolean,
 )

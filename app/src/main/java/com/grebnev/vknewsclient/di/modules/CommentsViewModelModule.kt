@@ -9,7 +9,6 @@ import dagger.multibindings.IntoMap
 
 @Module
 interface CommentsViewModelModule {
-
     @IntoMap
     @ViewModelKey(CommentsViewModel::class)
     @Binds

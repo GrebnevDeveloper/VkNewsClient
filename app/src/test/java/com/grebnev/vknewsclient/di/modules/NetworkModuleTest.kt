@@ -13,7 +13,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class NetworkModuleTest {
-
     @Test
     fun `provideApiService should return ApiService instance from ApiFactory`() {
         mockkObject(ApiFactory)

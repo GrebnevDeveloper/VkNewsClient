@@ -10,8 +10,11 @@ abstract class NewsFeedViewModel : ViewModel() {
     val errorMessage: StateFlow<String?> get() = _errorMessage
 
     abstract fun changeLikeStatus(feedPost: FeedPost)
+
     abstract fun changeSubscriptionStatus(feedPost: FeedPost)
+
     abstract fun delete(feedPost: FeedPost)
+
     abstract fun loadNextPosts()
 
     fun resetErrorMessage() {

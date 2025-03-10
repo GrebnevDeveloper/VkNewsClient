@@ -15,7 +15,6 @@ import org.junit.Before
 import org.junit.Test
 
 class FeedPostSourceTest {
-
     private lateinit var feedPostSource: FeedPostSource
     private lateinit var mockApiService: ApiService
     private lateinit var mockAccessToken: AccessTokenSource
@@ -24,139 +23,146 @@ class FeedPostSourceTest {
     @Before
     fun setUp() {
         mockApiService = mockk()
-        mockAccessToken = mockk {
-            coEvery { getAccessToken() } returns "mockToken"
-        }
+        mockAccessToken =
+            mockk {
+                coEvery { getAccessToken() } returns "mockToken"
+            }
         mockMapper = mockk()
         feedPostSource = FeedPostSource(mockApiService, mockAccessToken, mockMapper)
     }
 
     @Test
-    fun `loadRecommendationsFeed should return mapped posts and update nextFromState`() = runTest {
-        val mockResponse = mockk<NewsFeedResponseDto> {
-            every { newsFeedContent.nextFrom } returns "nextFromToken"
-            every { newsFeedContent.posts } returns listOf(mockk())
-            every { newsFeedContent.groups } returns listOf(mockk())
+    fun `loadRecommendationsFeed should return mapped posts and update nextFromState`() =
+        runTest {
+            val mockResponse =
+                mockk<NewsFeedResponseDto> {
+                    every { newsFeedContent.nextFrom } returns "nextFromToken"
+                    every { newsFeedContent.posts } returns listOf(mockk())
+                    every { newsFeedContent.groups } returns listOf(mockk())
+                }
+            val mockFeedPosts = listOf(mockk<FeedPost>())
+
+            coEvery { mockApiService.loadRecommendations(any()) } returns mockResponse
+            coEvery { mockMapper.mapResponseToFeedPost(mockResponse) } returns mockFeedPosts
+
+            feedPostSource.nextFromState.test {
+                assertEquals(null, awaitItem())
+
+                val result = feedPostSource.loadRecommendationsFeed()
+
+                assertEquals("nextFromToken", awaitItem())
+                assertEquals(mockFeedPosts, result)
+            }
+
+            coVerify(exactly = 1) { mockApiService.loadRecommendations("mockToken") }
+            coVerify(exactly = 1) { mockMapper.mapResponseToFeedPost(mockResponse) }
         }
-        val mockFeedPosts = listOf(mockk<FeedPost>())
-
-        coEvery { mockApiService.loadRecommendations(any()) } returns mockResponse
-        coEvery { mockMapper.mapResponseToFeedPost(mockResponse) } returns mockFeedPosts
-
-
-        feedPostSource.nextFromState.test {
-            assertEquals(null, awaitItem())
-
-            val result = feedPostSource.loadRecommendationsFeed()
-
-            assertEquals("nextFromToken", awaitItem())
-            assertEquals(mockFeedPosts, result)
-        }
-
-        coVerify(exactly = 1) { mockApiService.loadRecommendations("mockToken") }
-        coVerify(exactly = 1) { mockMapper.mapResponseToFeedPost(mockResponse) }
-    }
 
     @Test
-    fun `loadRecommendationsFeed with startFrom should call API with nextFrom`() = runTest {
-        val mockResponse = mockk<NewsFeedResponseDto> {
-            every { newsFeedContent.nextFrom } returns "nextFromToken"
-            every { newsFeedContent.posts } returns listOf(mockk())
-            every { newsFeedContent.groups } returns listOf(mockk())
+    fun `loadRecommendationsFeed with startFrom should call API with nextFrom`() =
+        runTest {
+            val mockResponse =
+                mockk<NewsFeedResponseDto> {
+                    every { newsFeedContent.nextFrom } returns "nextFromToken"
+                    every { newsFeedContent.posts } returns listOf(mockk())
+                    every { newsFeedContent.groups } returns listOf(mockk())
+                }
+            val mockFeedPosts = listOf(mockk<FeedPost>())
+
+            coEvery { mockApiService.loadRecommendations(any(), "startFromToken") } returns mockResponse
+            coEvery { mockMapper.mapResponseToFeedPost(mockResponse) } returns mockFeedPosts
+
+            feedPostSource._nextFromState.value = "startFromToken"
+
+            feedPostSource.nextFromState.test {
+                assertEquals("startFromToken", awaitItem())
+
+                val result = feedPostSource.loadRecommendationsFeed()
+
+                assertEquals("nextFromToken", awaitItem())
+
+                assertEquals(mockFeedPosts, result)
+            }
+
+            coVerify(exactly = 1) { mockApiService.loadRecommendations(any(), "startFromToken") }
+            coVerify(exactly = 1) { mockMapper.mapResponseToFeedPost(mockResponse) }
         }
-        val mockFeedPosts = listOf(mockk<FeedPost>())
-
-        coEvery { mockApiService.loadRecommendations(any(), "startFromToken") } returns mockResponse
-        coEvery { mockMapper.mapResponseToFeedPost(mockResponse) } returns mockFeedPosts
-
-        feedPostSource._nextFromState.value = "startFromToken"
-
-
-        feedPostSource.nextFromState.test {
-            assertEquals("startFromToken", awaitItem())
-
-            val result = feedPostSource.loadRecommendationsFeed()
-
-            assertEquals("nextFromToken", awaitItem())
-
-            assertEquals(mockFeedPosts, result)
-        }
-
-        coVerify(exactly = 1) { mockApiService.loadRecommendations(any(), "startFromToken") }
-        coVerify(exactly = 1) { mockMapper.mapResponseToFeedPost(mockResponse) }
-    }
 
     @Test
-    fun `loadSubscriptionsFeed should return mapped posts and update nextFromState`() = runTest {
-        val mockResponse = mockk<NewsFeedResponseDto> {
-            every { newsFeedContent.nextFrom } returns "nextFromToken"
-            every { newsFeedContent.posts } returns listOf(mockk())
-            every { newsFeedContent.groups } returns listOf(mockk())
+    fun `loadSubscriptionsFeed should return mapped posts and update nextFromState`() =
+        runTest {
+            val mockResponse =
+                mockk<NewsFeedResponseDto> {
+                    every { newsFeedContent.nextFrom } returns "nextFromToken"
+                    every { newsFeedContent.posts } returns listOf(mockk())
+                    every { newsFeedContent.groups } returns listOf(mockk())
+                }
+            val mockFeedPosts = listOf(mockk<FeedPost>())
+
+            coEvery {
+                mockApiService.loadSubscriptionPosts(
+                    token = "mockToken",
+                    sourceIds = "123,456",
+                )
+            } returns mockResponse
+            coEvery { mockMapper.mapResponseToFeedPost(mockResponse) } returns mockFeedPosts
+
+            feedPostSource.nextFromState.test {
+                assertEquals(null, awaitItem())
+
+                val result = feedPostSource.loadSubscriptionsFeed("123,456")
+
+                assertEquals("nextFromToken", awaitItem())
+                assertEquals(mockFeedPosts, result)
+            }
+
+            coVerify(exactly = 1) {
+                mockApiService.loadSubscriptionPosts(
+                    token = "mockToken",
+                    sourceIds = "123,456",
+                )
+            }
         }
-        val mockFeedPosts = listOf(mockk<FeedPost>())
-
-        coEvery {
-            mockApiService.loadSubscriptionPosts(
-                token = "mockToken",
-                sourceIds = "123,456"
-            )
-        } returns mockResponse
-        coEvery { mockMapper.mapResponseToFeedPost(mockResponse) } returns mockFeedPosts
-
-
-        feedPostSource.nextFromState.test {
-            assertEquals(null, awaitItem())
-
-            val result = feedPostSource.loadSubscriptionsFeed("123,456")
-
-            assertEquals("nextFromToken", awaitItem())
-            assertEquals(mockFeedPosts, result)
-        }
-
-        coVerify(exactly = 1) {
-            mockApiService.loadSubscriptionPosts(
-                token = "mockToken",
-                sourceIds = "123,456"
-            )
-        }
-    }
 
     @Test
-    fun `loadSubscriptionsFeed with startFrom should call API with nextFrom`() = runTest {
-        val mockResponse = mockk<NewsFeedResponseDto> {
-            every { newsFeedContent.nextFrom } returns "nextFromToken"
-            every { newsFeedContent.posts } returns listOf(mockk())
-            every { newsFeedContent.groups } returns listOf(mockk())
+    fun `loadSubscriptionsFeed with startFrom should call API with nextFrom`() =
+        runTest {
+            val mockResponse =
+                mockk<NewsFeedResponseDto> {
+                    every { newsFeedContent.nextFrom } returns "nextFromToken"
+                    every { newsFeedContent.posts } returns listOf(mockk())
+                    every { newsFeedContent.groups } returns listOf(mockk())
+                }
+            val mockFeedPosts = listOf(mockk<FeedPost>())
+
+            coEvery {
+                mockApiService.loadSubscriptionPosts(
+                    token = "mockToken",
+                    sourceIds = "123,456",
+                    nextFrom = "startFromToken",
+                )
+            } returns mockResponse
+            coEvery { mockMapper.mapResponseToFeedPost(mockResponse) } returns mockFeedPosts
+
+            feedPostSource._nextFromState.value = "startFromToken"
+
+            feedPostSource.nextFromState.test {
+                assertEquals("startFromToken", awaitItem())
+
+                val result = feedPostSource.loadSubscriptionsFeed("123,456")
+
+                assertEquals("nextFromToken", awaitItem())
+
+                assertEquals(mockFeedPosts, result)
+            }
+
+            coVerify(exactly = 1) {
+                mockApiService.loadSubscriptionPosts(
+                    token = "mockToken",
+                    sourceIds = "123,456",
+                    nextFrom = "startFromToken",
+                )
+            }
+            coVerify(exactly = 1) { mockMapper.mapResponseToFeedPost(mockResponse) }
         }
-        val mockFeedPosts = listOf(mockk<FeedPost>())
-
-        coEvery { mockApiService.loadSubscriptionPosts(
-            token = "mockToken",
-            sourceIds = "123,456",
-            nextFrom = "startFromToken"
-        ) } returns mockResponse
-        coEvery { mockMapper.mapResponseToFeedPost(mockResponse) } returns mockFeedPosts
-
-        feedPostSource._nextFromState.value = "startFromToken"
-
-
-        feedPostSource.nextFromState.test {
-            assertEquals("startFromToken", awaitItem())
-
-            val result = feedPostSource.loadSubscriptionsFeed("123,456")
-
-            assertEquals("nextFromToken", awaitItem())
-
-            assertEquals(mockFeedPosts, result)
-        }
-
-        coVerify(exactly = 1) {
-            mockApiService.loadSubscriptionPosts(
-                token = "mockToken",
-                sourceIds = "123,456",
-                nextFrom = "startFromToken"
-            )
-        }
-        coVerify(exactly = 1) { mockMapper.mapResponseToFeedPost(mockResponse) }
-    }
 }
