@@ -57,6 +57,7 @@ class SubscriptionsStatusSourceTest {
                 assertEquals(mockSubscription, awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -104,6 +105,7 @@ class SubscriptionsStatusSourceTest {
                 assertEquals(updatedSubscription, awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -145,5 +147,6 @@ class SubscriptionsStatusSourceTest {
                 assertEquals(Subscription(), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 }

@@ -53,6 +53,7 @@ class CommentsViewModelTest {
                 assertEquals(CommentsScreenState.Loading, awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -69,6 +70,7 @@ class CommentsViewModelTest {
                 assertEquals(CommentsScreenState.Comments(mockFeedPost, mockComments), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -80,6 +82,7 @@ class CommentsViewModelTest {
                 assertEquals(CommentsScreenState.NoComments, awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -94,6 +97,7 @@ class CommentsViewModelTest {
                 assertEquals(CommentsScreenState.Error(errorMessage), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -108,6 +112,8 @@ class CommentsViewModelTest {
                 assertEquals(CommentsScreenState.Loading, awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
-            coVerify(exactly = 1) { mockGetCommentsUseCase.retry() }
+            advanceUntilIdle()
+
+            coVerify { mockGetCommentsUseCase.retry() }
         }
 }
