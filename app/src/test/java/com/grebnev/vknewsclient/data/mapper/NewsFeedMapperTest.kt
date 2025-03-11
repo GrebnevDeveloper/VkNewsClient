@@ -13,10 +13,19 @@ import io.mockk.mockk
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class NewsFeedMapperTest {
-    private val newsFeedMapper = NewsFeedMapper()
+    private lateinit var newsFeedMapper: NewsFeedMapper
+
+    @Before
+    fun setUp() {
+        newsFeedMapper = NewsFeedMapper()
+    }
 
     @Test
     fun `mapResponseToFeedPost should map NewsFeedResponseDto to FeedPost with correct data`() {
@@ -73,6 +82,8 @@ class NewsFeedMapperTest {
                         every { groups } returns listOf(group)
                     }
             }
+        val expectedDate =
+            SimpleDateFormat("d MMMM yyyy, hh:mm", Locale.getDefault()).format(Date(1672531200L * 1000))
 
         val result = newsFeedMapper.mapResponseToFeedPost(response)
         val feedPost = result[0]
@@ -81,7 +92,7 @@ class NewsFeedMapperTest {
         assertEquals(1L, feedPost.id)
         assertEquals(123L, feedPost.communityId)
         assertEquals("Test Group", feedPost.communityName)
-        assertEquals("1 января 2023, 04:00", feedPost.publicationDate)
+        assertEquals(expectedDate, feedPost.publicationDate)
         assertEquals("https://example.com/group.jpg", feedPost.communityImageUrl)
         assertEquals("Test post", feedPost.contentText)
         assertEquals("https://example.com/image.jpg", feedPost.contentImageUrl)
@@ -114,6 +125,8 @@ class NewsFeedMapperTest {
                         every { profiles } returns listOf(profile)
                     }
             }
+        val expectedDate =
+            SimpleDateFormat("d MMMM yyyy, hh:mm", Locale.getDefault()).format(Date(1672531200L * 1000))
 
         val result = newsFeedMapper.mapResponseToPostComment(response)
         val postComment = result[0]
@@ -123,7 +136,7 @@ class NewsFeedMapperTest {
         assertEquals("https://example.com/avatar.jpg", postComment.authorAvatarUrl)
         assertEquals("John Doe", postComment.authorName)
         assertEquals("Test comment", postComment.commentText)
-        assertEquals("1 января 2023, 04:00", postComment.publicationDate)
+        assertEquals(expectedDate, postComment.publicationDate)
     }
 
     @Test

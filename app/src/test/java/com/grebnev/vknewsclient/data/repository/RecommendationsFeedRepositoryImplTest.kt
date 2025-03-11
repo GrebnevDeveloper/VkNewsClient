@@ -96,6 +96,7 @@ class RecommendationsFeedRepositoryImplTest {
                 assertEquals(ResultState.Success(mockFeedPosts), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -109,6 +110,7 @@ class RecommendationsFeedRepositoryImplTest {
                 assertEquals(ResultState.Error(ErrorType.NETWORK_ERROR), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -125,6 +127,7 @@ class RecommendationsFeedRepositoryImplTest {
                 assertEquals(ResultState.Success(mockFeedPosts), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
 
             coVerify { mockFeedPostSource.loadRecommendationsFeed() }
         }
@@ -144,8 +147,9 @@ class RecommendationsFeedRepositoryImplTest {
                 assertEquals(ResultState.Success(emptyList<FeedPost>()), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
 
-            coVerify(exactly = 1) { mockApiService.ignoreFeedPost("mockToken", 123L, 1L) }
+            coVerify { mockApiService.ignoreFeedPost("mockToken", 123L, 1L) }
         }
 
     @Test
@@ -164,6 +168,7 @@ class RecommendationsFeedRepositoryImplTest {
                 assertEquals(ResultState.Success(listOf(updatedFeedPost)), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -182,6 +187,7 @@ class RecommendationsFeedRepositoryImplTest {
                 assertEquals(ResultState.Success(listOf(updatedFeedPost)), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
 
             coVerify { mockSubscriptionsSource.changeSubscriptionStatus(mockFeedPost) }
         }

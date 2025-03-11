@@ -58,6 +58,7 @@ class ProfileInfoRepositoryImplTest {
                 assertEquals(ResultState.Initial, awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -80,6 +81,7 @@ class ProfileInfoRepositoryImplTest {
                 assertEquals(ResultState.Success(mockProfileInfo), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
         }
 
     @Test
@@ -104,6 +106,8 @@ class ProfileInfoRepositoryImplTest {
                 assertEquals(ResultState.Success(mockProfileInfo), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+            advanceUntilIdle()
+
             coVerify { mockApiService.loadProfileInfo("mockToken") }
         }
 
@@ -122,6 +126,7 @@ class ProfileInfoRepositoryImplTest {
                 assertEquals(ResultState.Initial, awaitItem())
                 assertEquals(ResultState.Error(errorType), awaitItem())
             }
+            advanceUntilIdle()
 
             coVerify(exactly = 4) { mockApiService.loadProfileInfo("mockToken") }
             verify(exactly = 1) { ErrorHandler.getErrorType(exception) }

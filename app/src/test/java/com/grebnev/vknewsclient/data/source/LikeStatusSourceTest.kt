@@ -9,6 +9,8 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -16,6 +18,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class LikeStatusSourceTest {
     private lateinit var likesStatusSource: LikesStatusSource
     private lateinit var mockApiService: ApiService
@@ -83,6 +86,7 @@ class LikeStatusSourceTest {
 
             assertEquals(11, updatedFeedPost.statisticsList.find { it.type == StatisticType.LIKES }?.count)
             assertTrue(updatedFeedPost.isLiked)
+            advanceUntilIdle()
 
             coVerify {
                 mockApiService.addLike(
@@ -113,6 +117,7 @@ class LikeStatusSourceTest {
 
             assertEquals(9, updatedFeedPost.statisticsList.find { it.type == StatisticType.LIKES }?.count)
             assertFalse(updatedFeedPost.isLiked)
+            advanceUntilIdle()
 
             coVerify {
                 mockApiService.deleteLike(
