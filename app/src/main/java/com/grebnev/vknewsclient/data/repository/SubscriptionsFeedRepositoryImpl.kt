@@ -3,7 +3,7 @@ package com.grebnev.vknewsclient.data.repository
 import com.grebnev.vknewsclient.core.extensions.mergeWith
 import com.grebnev.vknewsclient.core.handlers.ErrorHandler
 import com.grebnev.vknewsclient.core.wrappers.ErrorType
-import com.grebnev.vknewsclient.core.wrappers.ResultState
+import com.grebnev.vknewsclient.core.wrappers.ResultStatus
 import com.grebnev.vknewsclient.data.network.ApiService
 import com.grebnev.vknewsclient.data.source.AccessTokenSource
 import com.grebnev.vknewsclient.data.source.FeedPostSource
@@ -52,22 +52,22 @@ class SubscriptionsFeedRepositoryImpl
         private val feedPosts: List<FeedPost>
             get() = _feedPosts.toList()
 
-        private val refreshedListFlow = MutableSharedFlow<ResultState<List<FeedPost>, ErrorType>>()
+        private val refreshedListFlow = MutableSharedFlow<ResultStatus<List<FeedPost>, ErrorType>>()
 
-        private val subscriptionsFeedFlow: Flow<ResultState<List<FeedPost>, ErrorType>> =
+        private val subscriptionsFeedFlow: Flow<ResultStatus<List<FeedPost>, ErrorType>> =
             flow {
                 nextDataNeededEvents.emit(Unit)
                 nextDataNeededEvents.collect {
                     val sourceIds = subscriptionsState.value.sourceIds
                     if (sourceIds.isEmpty()) {
-                        emit(ResultState.Empty as ResultState<List<FeedPost>, ErrorType>)
+                        emit(ResultStatus.Empty as ResultStatus<List<FeedPost>, ErrorType>)
                         return@collect
                     }
 
                     val startFrom = nextFromState.value
 
                     if (startFrom == null && feedPosts.isNotEmpty()) {
-                        emit(ResultState.Success(feedPosts))
+                        emit(ResultStatus.Success(feedPosts))
                         return@collect
                     }
 
@@ -75,14 +75,14 @@ class SubscriptionsFeedRepositoryImpl
 
                     _feedPosts.addAll(posts.map { it.copy(isSubscribed = true) })
 
-                    emit(ResultState.Success(feedPosts))
+                    emit(ResultStatus.Success(feedPosts))
                 }
             }.retryWhen { cause, attempt ->
                 if (attempt <= ErrorHandler.MAX_COUNT_RETRY) {
                     delay(ErrorHandler.RETRY_TIMEOUT)
                 } else {
                     val errorType = ErrorHandler.getErrorType(cause)
-                    emit(ResultState.Error(errorType))
+                    emit(ResultStatus.Error(errorType))
                     delay(ErrorHandler.RETRY_TIMEOUT * 2)
                 }
                 true
@@ -109,23 +109,23 @@ class SubscriptionsFeedRepositoryImpl
                 }
                 deletePostsAfterUnsubscribing()
                 if (sourceIds.isEmpty()) {
-                    refreshedListFlow.emit(ResultState.Empty)
+                    refreshedListFlow.emit(ResultStatus.Empty)
                 } else {
-                    refreshedListFlow.emit(ResultState.Success(feedPosts))
+                    refreshedListFlow.emit(ResultStatus.Success(feedPosts))
                 }
             }
         }
 
-        private val subscriptions: StateFlow<ResultState<List<FeedPost>, ErrorType>> =
+        private val subscriptions: StateFlow<ResultStatus<List<FeedPost>, ErrorType>> =
             subscriptionsFeedFlow
                 .mergeWith(refreshedListFlow)
                 .stateIn(
                     scope = coroutineScope,
                     started = SharingStarted.Lazily,
-                    initialValue = ResultState.Success(feedPosts),
+                    initialValue = ResultStatus.Success(feedPosts),
                 )
 
-        override val getSubscriptionPosts: StateFlow<ResultState<List<FeedPost>, ErrorType>> =
+        override val getSubscriptionPosts: StateFlow<ResultStatus<List<FeedPost>, ErrorType>> =
             subscriptions
 
         override suspend fun loadNextData() {
@@ -139,14 +139,14 @@ class SubscriptionsFeedRepositoryImpl
                 postId = feedPost.id,
             )
             _feedPosts.remove(feedPost)
-            refreshedListFlow.emit(ResultState.Success(feedPosts))
+            refreshedListFlow.emit(ResultStatus.Success(feedPosts))
         }
 
         override suspend fun changeLikeStatus(feedPost: FeedPost) {
             val newPost = likesSource.changeLikeStatus(feedPost)
             val postIndex = _feedPosts.indexOf(feedPost)
             _feedPosts[postIndex] = newPost
-            refreshedListFlow.emit(ResultState.Success(feedPosts))
+            refreshedListFlow.emit(ResultStatus.Success(feedPosts))
         }
 
         override suspend fun changeSubscriptionStatus(feedPost: FeedPost) {

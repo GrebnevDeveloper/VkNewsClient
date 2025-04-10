@@ -2,7 +2,7 @@ package com.grebnev.vknewsclient.presentation.comments
 
 import app.cash.turbine.test
 import com.grebnev.vknewsclient.core.wrappers.ErrorType
-import com.grebnev.vknewsclient.core.wrappers.ResultState
+import com.grebnev.vknewsclient.core.wrappers.ResultStatus
 import com.grebnev.vknewsclient.domain.entity.FeedPost
 import com.grebnev.vknewsclient.domain.entity.PostComment
 import com.grebnev.vknewsclient.domain.usecases.GetCommentsUseCase
@@ -24,7 +24,7 @@ class CommentsViewModelTest {
     private lateinit var mockErrorMessageProvider: ErrorMessageProvider
 
     private lateinit var viewModel: CommentsViewModel
-    private lateinit var commentsStateFlow: MutableStateFlow<ResultState<List<PostComment>, ErrorType>>
+    private lateinit var commentsStateFlow: MutableStateFlow<ResultStatus<List<PostComment>, ErrorType>>
 
     private val mockFeedPost = mockk<FeedPost>()
 
@@ -33,7 +33,7 @@ class CommentsViewModelTest {
         mockGetCommentsUseCase = mockk()
         mockErrorMessageProvider = mockk()
 
-        commentsStateFlow = MutableStateFlow(ResultState.Initial)
+        commentsStateFlow = MutableStateFlow(ResultStatus.Initial)
         coEvery { mockGetCommentsUseCase.getCommentsPost(mockFeedPost) } returns commentsStateFlow
 
         viewModel =
@@ -47,7 +47,7 @@ class CommentsViewModelTest {
     @Test
     fun `screenState should emit Loading initially`() =
         runTest {
-            commentsStateFlow.emit(ResultState.Initial)
+            commentsStateFlow.emit(ResultStatus.Initial)
 
             viewModel.screenState.test {
                 assertEquals(CommentsScreenState.Loading, awaitItem())
@@ -64,7 +64,7 @@ class CommentsViewModelTest {
                     mockk<PostComment>(),
                     mockk<PostComment>(),
                 )
-            commentsStateFlow.emit(ResultState.Success(mockComments))
+            commentsStateFlow.emit(ResultStatus.Success(mockComments))
 
             viewModel.screenState.test {
                 assertEquals(CommentsScreenState.Comments(mockFeedPost, mockComments), awaitItem())
@@ -76,7 +76,7 @@ class CommentsViewModelTest {
     @Test
     fun `screenState should emit NoComments state when useCase returns Empty`() =
         runTest {
-            commentsStateFlow.emit(ResultState.Empty)
+            commentsStateFlow.emit(ResultStatus.Empty)
 
             viewModel.screenState.test {
                 assertEquals(CommentsScreenState.NoComments, awaitItem())
@@ -91,7 +91,7 @@ class CommentsViewModelTest {
             val errorType = ErrorType.NETWORK_ERROR
             val errorMessage = "Network error"
             coEvery { mockErrorMessageProvider.getErrorMessage(errorType) } returns errorMessage
-            commentsStateFlow.emit(ResultState.Error(errorType))
+            commentsStateFlow.emit(ResultStatus.Error(errorType))
 
             viewModel.screenState.test {
                 assertEquals(CommentsScreenState.Error(errorMessage), awaitItem())
@@ -106,7 +106,7 @@ class CommentsViewModelTest {
             coEvery { mockGetCommentsUseCase.retry() } returns Unit
 
             viewModel.screenState.test {
-                commentsStateFlow.emit(ResultState.Error(mockk()))
+                commentsStateFlow.emit(ResultStatus.Error(mockk()))
                 viewModel.refreshedCommentsPost()
                 advanceUntilIdle()
                 assertEquals(CommentsScreenState.Loading, awaitItem())

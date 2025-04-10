@@ -4,7 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.grebnev.vknewsclient.core.extensions.mergeWith
 import com.grebnev.vknewsclient.core.handlers.ErrorHandler
 import com.grebnev.vknewsclient.core.wrappers.ErrorType
-import com.grebnev.vknewsclient.core.wrappers.ResultState
+import com.grebnev.vknewsclient.core.wrappers.ResultStatus
 import com.grebnev.vknewsclient.di.keys.NewsFeedType
 import com.grebnev.vknewsclient.domain.entity.FeedPost
 import com.grebnev.vknewsclient.domain.usecases.ChangeLikeStatusUseCase
@@ -57,10 +57,10 @@ class SubscriptionsFeedViewModel
                 }
 
         private fun mapResultStateToScreenState(
-            subscriptionState: ResultState<List<FeedPost>, ErrorType>,
+            subscriptionState: ResultStatus<List<FeedPost>, ErrorType>,
         ): SubscriptionsScreenState =
             when (subscriptionState) {
-                is ResultState.Success -> {
+                is ResultStatus.Success -> {
                     val currentFeedPosts = subscriptionState.data
                     if (currentFeedPosts.isNotEmpty()) {
                         SubscriptionsScreenState.Posts(posts = currentFeedPosts)
@@ -69,13 +69,10 @@ class SubscriptionsFeedViewModel
                     }
                 }
 
-                is ResultState.Initial ->
-                    SubscriptionsScreenState.Loading
-
-                is ResultState.Empty ->
+                is ResultStatus.Empty ->
                     SubscriptionsScreenState.NoSubscriptions
 
-                is ResultState.Error ->
+                is ResultStatus.Error ->
                     SubscriptionsScreenState.Error(
                         errorMessageProvider.getErrorMessage(subscriptionState.error),
                     )
@@ -85,7 +82,7 @@ class SubscriptionsFeedViewModel
             viewModelScope.launch(exceptionHandler) {
                 loadNextDataFlow.emit(
                     SubscriptionsScreenState.Posts(
-                        posts = (subscriptionsFlow.value as ResultState.Success).data,
+                        posts = (subscriptionsFlow.value as ResultStatus.Success).data,
                         nextDataLoading = true,
                     ),
                 )

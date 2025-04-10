@@ -1,10 +1,10 @@
 package com.grebnev.vknewsclient.domain.usecases
 
 import com.grebnev.vknewsclient.core.wrappers.ErrorType
-import com.grebnev.vknewsclient.core.wrappers.ResultState
+import com.grebnev.vknewsclient.core.wrappers.ResultStatus
 import com.grebnev.vknewsclient.domain.entity.ProfileInfo
 import com.grebnev.vknewsclient.domain.repository.ProfileInfoRepository
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class GetProfileInfoUseCase
@@ -12,7 +12,7 @@ class GetProfileInfoUseCase
     constructor(
         private val repository: ProfileInfoRepository,
     ) {
-        val getProfileInfo: StateFlow<ResultState<ProfileInfo, ErrorType>> = repository.getProfileInfo
+        val getProfileInfo: Flow<ResultStatus<ProfileInfo, ErrorType>> = repository.getProfileInfo
 
         suspend fun retry() {
             repository.retry()

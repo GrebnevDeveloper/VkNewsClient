@@ -2,7 +2,7 @@ package com.grebnev.vknewsclient.data.repository
 
 import app.cash.turbine.test
 import com.grebnev.vknewsclient.core.wrappers.ErrorType
-import com.grebnev.vknewsclient.core.wrappers.ResultState
+import com.grebnev.vknewsclient.core.wrappers.ResultStatus
 import com.grebnev.vknewsclient.data.network.ApiService
 import com.grebnev.vknewsclient.data.source.AccessTokenSource
 import com.grebnev.vknewsclient.data.source.FeedPostSource
@@ -92,8 +92,8 @@ class RecommendationsFeedRepositoryImplTest {
             coEvery { mockFeedPostSource.loadRecommendationsFeed() } returns mockFeedPosts
 
             repository.getRecommendations.test {
-                assertEquals(ResultState.Success(emptyList<FeedPost>()), awaitItem())
-                assertEquals(ResultState.Success(mockFeedPosts), awaitItem())
+                assertEquals(ResultStatus.Success(emptyList<FeedPost>()), awaitItem())
+                assertEquals(ResultStatus.Success(mockFeedPosts), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
             advanceUntilIdle()
@@ -106,8 +106,8 @@ class RecommendationsFeedRepositoryImplTest {
             coEvery { mockFeedPostSource.loadRecommendationsFeed() } throws throwable
 
             repository.getRecommendations.test(timeout = 13.seconds) {
-                assertEquals(ResultState.Success(emptyList<FeedPost>()), awaitItem())
-                assertEquals(ResultState.Error(ErrorType.NETWORK_ERROR), awaitItem())
+                assertEquals(ResultStatus.Success(emptyList<FeedPost>()), awaitItem())
+                assertEquals(ResultStatus.Error(ErrorType.NETWORK_ERROR), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
             advanceUntilIdle()
@@ -123,8 +123,8 @@ class RecommendationsFeedRepositoryImplTest {
             advanceUntilIdle()
 
             repository.getRecommendations.test {
-                assertEquals(ResultState.Success(emptyList<FeedPost>()), awaitItem())
-                assertEquals(ResultState.Success(mockFeedPosts), awaitItem())
+                assertEquals(ResultStatus.Success(emptyList<FeedPost>()), awaitItem())
+                assertEquals(ResultStatus.Success(mockFeedPosts), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
             advanceUntilIdle()
@@ -140,11 +140,11 @@ class RecommendationsFeedRepositoryImplTest {
             coEvery { mockApiService.ignoreFeedPost(any(), 123L, 1L) } returns Unit
 
             repository.getRecommendations.test {
-                assertEquals(ResultState.Success(emptyList<FeedPost>()), awaitItem())
-                assertEquals(ResultState.Success(mockFeedPosts), awaitItem())
+                assertEquals(ResultStatus.Success(emptyList<FeedPost>()), awaitItem())
+                assertEquals(ResultStatus.Success(mockFeedPosts), awaitItem())
                 repository.deletePost(mockFeedPost)
                 advanceUntilIdle()
-                assertEquals(ResultState.Success(emptyList<FeedPost>()), awaitItem())
+                assertEquals(ResultStatus.Success(emptyList<FeedPost>()), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
             advanceUntilIdle()
@@ -161,11 +161,11 @@ class RecommendationsFeedRepositoryImplTest {
             coEvery { mockLikesSource.changeLikeStatus(mockFeedPost) } returns updatedFeedPost
 
             repository.getRecommendations.test {
-                assertEquals(ResultState.Success(emptyList<FeedPost>()), awaitItem())
-                assertEquals(ResultState.Success(mockFeedPosts), awaitItem())
+                assertEquals(ResultStatus.Success(emptyList<FeedPost>()), awaitItem())
+                assertEquals(ResultStatus.Success(mockFeedPosts), awaitItem())
                 repository.changeLikeStatus(mockFeedPost)
                 advanceUntilIdle()
-                assertEquals(ResultState.Success(listOf(updatedFeedPost)), awaitItem())
+                assertEquals(ResultStatus.Success(listOf(updatedFeedPost)), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
             advanceUntilIdle()
@@ -183,8 +183,8 @@ class RecommendationsFeedRepositoryImplTest {
             advanceUntilIdle()
 
             repository.getRecommendations.test {
-                assertEquals(ResultState.Success(emptyList<FeedPost>()), awaitItem())
-                assertEquals(ResultState.Success(listOf(updatedFeedPost)), awaitItem())
+                assertEquals(ResultStatus.Success(emptyList<FeedPost>()), awaitItem())
+                assertEquals(ResultStatus.Success(listOf(updatedFeedPost)), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
             advanceUntilIdle()

@@ -2,7 +2,7 @@ package com.grebnev.vknewsclient.presentation.news.recommendations
 
 import app.cash.turbine.test
 import com.grebnev.vknewsclient.core.wrappers.ErrorType
-import com.grebnev.vknewsclient.core.wrappers.ResultState
+import com.grebnev.vknewsclient.core.wrappers.ResultStatus
 import com.grebnev.vknewsclient.di.keys.NewsFeedType
 import com.grebnev.vknewsclient.domain.entity.FeedPost
 import com.grebnev.vknewsclient.domain.usecases.ChangeLikeStatusUseCase
@@ -33,7 +33,7 @@ class RecommendationsFeedViewModelTest {
     private lateinit var mockErrorMessageProvider: ErrorMessageProvider
 
     private lateinit var viewModel: RecommendationsFeedViewModel
-    private lateinit var recommendationsStateFlow: MutableStateFlow<ResultState<List<FeedPost>, ErrorType>>
+    private lateinit var recommendationsStateFlow: MutableStateFlow<ResultStatus<List<FeedPost>, ErrorType>>
 
     @Before
     fun setUp() {
@@ -44,7 +44,7 @@ class RecommendationsFeedViewModelTest {
         mockChangeSubscriptionStatusUseCase = mockk()
         mockErrorMessageProvider = mockk()
 
-        recommendationsStateFlow = MutableStateFlow(ResultState.Initial)
+        recommendationsStateFlow = MutableStateFlow(ResultStatus.Initial)
         coEvery { mockGetRecommendationsUseCase() } returns recommendationsStateFlow
 
         viewModel =
@@ -61,7 +61,7 @@ class RecommendationsFeedViewModelTest {
     @Test
     fun `screenState should emit Loading initially`() =
         runTest {
-            recommendationsStateFlow.emit(ResultState.Initial)
+            recommendationsStateFlow.emit(ResultStatus.Initial)
 
             viewModel.screenState.test {
                 assertEquals(RecommendationsFeedScreenState.Loading, awaitItem())
@@ -84,7 +84,7 @@ class RecommendationsFeedViewModelTest {
                         every { contentText } returns "Post 2"
                     },
                 )
-            recommendationsStateFlow.emit(ResultState.Success(mockFeedPosts))
+            recommendationsStateFlow.emit(ResultStatus.Success(mockFeedPosts))
 
             viewModel.screenState.test {
                 assertEquals(
@@ -99,7 +99,7 @@ class RecommendationsFeedViewModelTest {
     @Test
     fun `screenState should emit NoRecommendations state when useCase returns Empty`() =
         runTest {
-            recommendationsStateFlow.emit(ResultState.Empty)
+            recommendationsStateFlow.emit(ResultStatus.Empty)
 
             viewModel.screenState.test {
                 assertEquals(RecommendationsFeedScreenState.NoRecommendations, awaitItem())
@@ -114,7 +114,7 @@ class RecommendationsFeedViewModelTest {
             val errorType = ErrorType.NETWORK_ERROR
             val errorMessage = "Network error"
             coEvery { mockErrorMessageProvider.getErrorMessage(errorType) } returns errorMessage
-            recommendationsStateFlow.emit(ResultState.Error(errorType))
+            recommendationsStateFlow.emit(ResultStatus.Error(errorType))
 
             viewModel.screenState.test {
                 assertEquals(RecommendationsFeedScreenState.Error(errorMessage), awaitItem())
@@ -134,7 +134,7 @@ class RecommendationsFeedViewModelTest {
                     },
                 )
             coEvery { mockLoadNextDataUseCase(NewsFeedType.RECOMMENDATIONS) } returns Unit
-            recommendationsStateFlow.emit(ResultState.Success(mockFeedPosts))
+            recommendationsStateFlow.emit(ResultStatus.Success(mockFeedPosts))
 
             viewModel.loadNextPosts()
             advanceUntilIdle()

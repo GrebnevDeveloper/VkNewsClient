@@ -2,7 +2,7 @@ package com.grebnev.vknewsclient.presentation.news.subscriptions
 
 import app.cash.turbine.test
 import com.grebnev.vknewsclient.core.wrappers.ErrorType
-import com.grebnev.vknewsclient.core.wrappers.ResultState
+import com.grebnev.vknewsclient.core.wrappers.ResultStatus
 import com.grebnev.vknewsclient.di.keys.NewsFeedType
 import com.grebnev.vknewsclient.domain.entity.FeedPost
 import com.grebnev.vknewsclient.domain.usecases.ChangeLikeStatusUseCase
@@ -32,7 +32,7 @@ class SubscriptionsFeedViewModelTest {
     private lateinit var mockErrorMessageProvider: ErrorMessageProvider
 
     private lateinit var viewModel: SubscriptionsFeedViewModel
-    private lateinit var subscriptionsStateFlow: MutableStateFlow<ResultState<List<FeedPost>, ErrorType>>
+    private lateinit var subscriptionsStateFlow: MutableStateFlow<ResultStatus<List<FeedPost>, ErrorType>>
 
     @Before
     fun setUp() {
@@ -43,7 +43,7 @@ class SubscriptionsFeedViewModelTest {
         mockChangeSubscriptionStatusUseCase = mockk()
         mockErrorMessageProvider = mockk()
 
-        subscriptionsStateFlow = MutableStateFlow(ResultState.Initial)
+        subscriptionsStateFlow = MutableStateFlow(ResultStatus.Initial)
         coEvery { mockGetSubscriptionPostsUseCase() } returns subscriptionsStateFlow
 
         viewModel =
@@ -60,7 +60,7 @@ class SubscriptionsFeedViewModelTest {
     @Test
     fun `screenState should emit Loading initially`() =
         runTest {
-            subscriptionsStateFlow.emit(ResultState.Initial)
+            subscriptionsStateFlow.emit(ResultStatus.Initial)
 
             viewModel.screenState.test {
                 assertEquals(SubscriptionsScreenState.Loading, awaitItem())
@@ -77,7 +77,7 @@ class SubscriptionsFeedViewModelTest {
                     mockk<FeedPost>(),
                     mockk<FeedPost>(),
                 )
-            subscriptionsStateFlow.emit(ResultState.Success(mockFeedPosts))
+            subscriptionsStateFlow.emit(ResultStatus.Success(mockFeedPosts))
 
             viewModel.screenState.test {
                 assertEquals(SubscriptionsScreenState.Posts(mockFeedPosts), awaitItem())
@@ -89,7 +89,7 @@ class SubscriptionsFeedViewModelTest {
     @Test
     fun `screenState should emit NoSubscriptions state when useCase returns Empty`() =
         runTest {
-            subscriptionsStateFlow.emit(ResultState.Empty)
+            subscriptionsStateFlow.emit(ResultStatus.Empty)
 
             viewModel.screenState.test {
                 assertEquals(SubscriptionsScreenState.NoSubscriptions, awaitItem())
@@ -105,7 +105,7 @@ class SubscriptionsFeedViewModelTest {
             val errorMessage = "Network error"
             coEvery { mockErrorMessageProvider.getErrorMessage(errorType) } returns errorMessage
 
-            subscriptionsStateFlow.emit(ResultState.Error(errorType))
+            subscriptionsStateFlow.emit(ResultStatus.Error(errorType))
 
             viewModel.screenState.test {
                 assertEquals(SubscriptionsScreenState.Error(errorMessage), awaitItem())
@@ -121,7 +121,7 @@ class SubscriptionsFeedViewModelTest {
                 listOf(
                     mockk<FeedPost>(),
                 )
-            subscriptionsStateFlow.emit(ResultState.Success(mockFeedPosts))
+            subscriptionsStateFlow.emit(ResultStatus.Success(mockFeedPosts))
             coEvery { mockLoadNextDataUseCase(NewsFeedType.SUBSCRIPTIONS) } returns Unit
 
             viewModel.loadNextPosts()

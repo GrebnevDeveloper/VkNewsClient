@@ -4,7 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.grebnev.vknewsclient.core.extensions.mergeWith
 import com.grebnev.vknewsclient.core.handlers.ErrorHandler
 import com.grebnev.vknewsclient.core.wrappers.ErrorType
-import com.grebnev.vknewsclient.core.wrappers.ResultState
+import com.grebnev.vknewsclient.core.wrappers.ResultStatus
 import com.grebnev.vknewsclient.di.keys.NewsFeedType
 import com.grebnev.vknewsclient.domain.entity.FeedPost
 import com.grebnev.vknewsclient.domain.usecases.ChangeLikeStatusUseCase
@@ -56,22 +56,19 @@ class RecommendationsFeedViewModel
                 }
 
         private fun mapResultStateToScreenState(
-            recommendationsState: ResultState<List<FeedPost>, ErrorType>,
+            recommendationsState: ResultStatus<List<FeedPost>, ErrorType>,
         ): RecommendationsFeedScreenState =
             when (recommendationsState) {
-                is ResultState.Error -> {
+                is ResultStatus.Error -> {
                     RecommendationsFeedScreenState.Error(
                         errorMessageProvider.getErrorMessage(recommendationsState.error),
                     )
                 }
 
-                is ResultState.Empty ->
+                is ResultStatus.Empty ->
                     RecommendationsFeedScreenState.NoRecommendations
 
-                is ResultState.Initial ->
-                    RecommendationsFeedScreenState.Loading
-
-                is ResultState.Success -> {
+                is ResultStatus.Success -> {
                     val currentFeedPost = recommendationsState.data
                     if (currentFeedPost.isNotEmpty()) {
                         RecommendationsFeedScreenState.Posts(currentFeedPost)
@@ -85,7 +82,7 @@ class RecommendationsFeedViewModel
             viewModelScope.launch(exceptionHandler) {
                 loadNextDataFlow.emit(
                     RecommendationsFeedScreenState.Posts(
-                        posts = (recommendationsFlow.value as ResultState.Success).data,
+                        posts = (recommendationsFlow.value as ResultStatus.Success).data,
                         nextDataLoading = true,
                     ),
                 )
