@@ -6,6 +6,7 @@ import com.grebnev.vknewsclient.data.network.ApiService
 import com.grebnev.vknewsclient.domain.entity.FeedPost
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 
 class FeedPostSource
@@ -17,7 +18,7 @@ class FeedPostSource
     ) {
         @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
         internal val _nextFromState = MutableStateFlow<String?>(null)
-        val nextFromState: StateFlow<String?> = _nextFromState
+        val nextFromState: StateFlow<String?> = _nextFromState.asStateFlow()
 
         suspend fun loadRecommendationsFeed(): List<FeedPost> {
             val startFrom = nextFromState.value

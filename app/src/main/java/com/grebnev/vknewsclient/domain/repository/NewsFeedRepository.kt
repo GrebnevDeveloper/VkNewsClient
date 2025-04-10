@@ -10,4 +10,6 @@ interface NewsFeedRepository {
     suspend fun changeLikeStatus(feedPost: FeedPost)
 
     suspend fun changeSubscriptionStatus(feedPost: FeedPost)
+
+    fun close()
 }

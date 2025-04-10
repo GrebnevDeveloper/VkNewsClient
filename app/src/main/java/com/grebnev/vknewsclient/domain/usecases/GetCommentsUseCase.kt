@@ -12,4 +12,6 @@ class GetCommentsUseCase
         fun getCommentsPost(feedPost: FeedPost) = repository.getComments(feedPost)
 
         suspend fun retry() = repository.retry()
+
+        fun close() = repository.close()
     }

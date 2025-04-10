@@ -60,14 +60,14 @@ fun FeedPosts(
         }
     }
 
-    LaunchedEffect(feedPostState, nextDataIsLoading) {
+    LaunchedEffect(feedPostState) {
         snapshotFlow { feedPostState.layoutInfo }
             .map { layoutInfo ->
                 val lastVisibleItem = layoutInfo.visibleItemsInfo.lastOrNull()
                 lastVisibleItem?.index == layoutInfo.totalItemsCount - 3
             }.distinctUntilChanged()
             .collect { needLoadMore ->
-                if (needLoadMore && !nextDataIsLoading && posts.isNotEmpty()) {
+                if (needLoadMore && nextDataIsLoading) {
                     viewModel.loadNextPosts()
                 }
             }
@@ -123,9 +123,10 @@ fun FeedPosts(
                     }
                 }
                 item(contentType = "loading") {
-                    when {
-                        nextDataIsLoading -> LoadingIndicator()
-                        posts.isEmpty() -> EmptyState()
+                    if (nextDataIsLoading) {
+                        LoadingIndicator()
+                    } else {
+                        EmptyState()
                     }
                 }
             }
@@ -151,7 +152,7 @@ private fun EmptyState() {
     Box(
         modifier =
             Modifier
-                .padding(vertical = 100.dp)
+                .padding(bottom = 100.dp)
                 .fillMaxWidth(),
         contentAlignment = Alignment.Center,
     ) {

@@ -10,4 +10,6 @@ interface CommentsPostRepository {
     fun getComments(feedPost: FeedPost): Flow<ResultStatus<List<PostComment>, ErrorType>>
 
     suspend fun retry()
+
+    fun close()
 }

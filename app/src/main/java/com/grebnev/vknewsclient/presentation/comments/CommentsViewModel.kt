@@ -62,4 +62,9 @@ class CommentsViewModel
                 getCommentsUseCase.retry()
             }
         }
+
+        override fun onCleared() {
+            super.onCleared()
+            getCommentsUseCase.close()
+        }
     }

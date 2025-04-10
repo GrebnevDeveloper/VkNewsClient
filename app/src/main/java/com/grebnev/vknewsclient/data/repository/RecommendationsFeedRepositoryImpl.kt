@@ -14,14 +14,12 @@ import com.grebnev.vknewsclient.domain.entity.FeedPost
 import com.grebnev.vknewsclient.domain.repository.RecommendationsFeedRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.retryWhen
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -70,7 +68,7 @@ class RecommendationsFeedRepositoryImpl
                         }
                     }
 
-                    emit(ResultStatus.Success(feedPosts))
+                    emit(ResultStatus.Success(data = feedPosts, nextDataLoading = true))
                 }
             }.retryWhen { cause, attempt ->
                 if (attempt <= ErrorHandler.MAX_COUNT_RETRY) {
@@ -103,15 +101,9 @@ class RecommendationsFeedRepositoryImpl
             }
         }
 
-        private val recommendations: StateFlow<ResultStatus<List<FeedPost>, ErrorType>> =
+        override val getRecommendations: Flow<ResultStatus<List<FeedPost>, ErrorType>> =
             recommendationsFeedFlow
                 .mergeWith(refreshedListFlow)
-                .stateIn(
-                    scope = coroutineScope,
-                    started = SharingStarted.Lazily,
-                    initialValue = ResultStatus.Success(feedPosts),
-                )
-        override val getRecommendations: StateFlow<ResultStatus<List<FeedPost>, ErrorType>> = recommendations
 
         override suspend fun loadNextData() {
             nextDataNeededEvents.emit(Unit)
@@ -136,5 +128,9 @@ class RecommendationsFeedRepositoryImpl
 
         override suspend fun changeSubscriptionStatus(feedPost: FeedPost) {
             subscriptionsSource.changeSubscriptionStatus(feedPost)
+        }
+
+        override fun close() {
+            coroutineScope.cancel()
         }
     }

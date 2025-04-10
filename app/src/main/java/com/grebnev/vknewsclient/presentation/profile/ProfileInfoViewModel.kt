@@ -62,4 +62,9 @@ class ProfileInfoViewModel
                 profileInfoUseCase.retry()
             }
         }
+
+        override fun onCleared() {
+            super.onCleared()
+            profileInfoUseCase.close()
+        }
     }

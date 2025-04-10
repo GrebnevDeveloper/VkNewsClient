@@ -9,4 +9,6 @@ interface ProfileInfoRepository {
     val getProfileInfo: Flow<ResultStatus<ProfileInfo, ErrorType>>
 
     suspend fun retry()
+
+    fun close()
 }

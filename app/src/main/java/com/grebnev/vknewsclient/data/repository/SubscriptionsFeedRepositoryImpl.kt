@@ -15,14 +15,12 @@ import com.grebnev.vknewsclient.domain.repository.SubscriptionsFeedRepository
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.retryWhen
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -75,7 +73,12 @@ class SubscriptionsFeedRepositoryImpl
 
                     _feedPosts.addAll(posts.map { it.copy(isSubscribed = true) })
 
-                    emit(ResultStatus.Success(feedPosts))
+                    emit(
+                        ResultStatus.Success(
+                            data = feedPosts,
+                            nextDataLoading = true,
+                        ),
+                    )
                 }
             }.retryWhen { cause, attempt ->
                 if (attempt <= ErrorHandler.MAX_COUNT_RETRY) {
@@ -116,17 +119,9 @@ class SubscriptionsFeedRepositoryImpl
             }
         }
 
-        private val subscriptions: StateFlow<ResultStatus<List<FeedPost>, ErrorType>> =
+        override val getSubscriptionPosts: Flow<ResultStatus<List<FeedPost>, ErrorType>> =
             subscriptionsFeedFlow
                 .mergeWith(refreshedListFlow)
-                .stateIn(
-                    scope = coroutineScope,
-                    started = SharingStarted.Lazily,
-                    initialValue = ResultStatus.Success(feedPosts),
-                )
-
-        override val getSubscriptionPosts: StateFlow<ResultStatus<List<FeedPost>, ErrorType>> =
-            subscriptions
 
         override suspend fun loadNextData() {
             nextDataNeededEvents.emit(Unit)
@@ -156,5 +151,9 @@ class SubscriptionsFeedRepositoryImpl
         private fun deletePostsAfterUnsubscribing() {
             val deletedPosts = _feedPosts.filter { !it.isSubscribed }
             _feedPosts.removeAll(deletedPosts)
+        }
+
+        override fun close() {
+            coroutineScope.cancel()
         }
     }

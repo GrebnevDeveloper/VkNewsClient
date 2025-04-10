@@ -14,7 +14,7 @@ class GetProfileInfoUseCase
     ) {
         val getProfileInfo: Flow<ResultStatus<ProfileInfo, ErrorType>> = repository.getProfileInfo
 
-        suspend fun retry() {
-            repository.retry()
-        }
+        suspend fun retry() = repository.retry()
+
+        fun close() = repository.close()
     }
