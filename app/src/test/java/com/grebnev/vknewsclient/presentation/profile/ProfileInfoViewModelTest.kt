@@ -1,17 +1,21 @@
 package com.grebnev.vknewsclient.presentation.profile
 
-import app.cash.turbine.test
 import com.grebnev.vknewsclient.core.wrappers.ErrorType
-import com.grebnev.vknewsclient.core.wrappers.ResultState
+import com.grebnev.vknewsclient.core.wrappers.ResultStatus
 import com.grebnev.vknewsclient.domain.entity.ProfileInfo
 import com.grebnev.vknewsclient.domain.usecases.GetProfileInfoUseCase
 import com.grebnev.vknewsclient.presentation.base.ErrorMessageProvider
+import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -24,26 +28,23 @@ class ProfileInfoViewModelTest {
     private lateinit var mockErrorMessageProvider: ErrorMessageProvider
 
     private lateinit var viewModel: ProfileInfoViewModel
-    private lateinit var profileInfoStateFlow: MutableStateFlow<ResultState<ProfileInfo, ErrorType>>
 
     @Before
     fun setUp() {
         mockProfileInfoUseCase = mockk()
         mockErrorMessageProvider = mockk()
-        profileInfoStateFlow = MutableStateFlow(ResultState.Initial)
-        coEvery { mockProfileInfoUseCase.getProfileInfo } returns profileInfoStateFlow
-        viewModel = ProfileInfoViewModel(mockProfileInfoUseCase, mockErrorMessageProvider)
     }
 
     @Test
     fun `screenState should emit Loading initially`() =
         runTest {
-            profileInfoStateFlow.emit(ResultState.Initial)
+            coEvery { mockProfileInfoUseCase.getProfileInfo } returns emptyFlow()
 
-            viewModel.screenState.test {
-                assertEquals(ProfileInfoScreenState.Loading, awaitItem())
-                cancelAndIgnoreRemainingEvents()
-            }
+            viewModel = createViewModel()
+
+            val result = viewModel.screenState.first { it is ProfileInfoScreenState.Loading }
+
+            assertEquals(ProfileInfoScreenState.Loading, result)
             advanceUntilIdle()
         }
 
@@ -58,12 +59,14 @@ class ProfileInfoViewModelTest {
                     every { lastName } returns "Doe"
                 }
 
-            profileInfoStateFlow.emit(ResultState.Success(mockProfileInfo))
+            coEvery { mockProfileInfoUseCase.getProfileInfo } returns
+                flowOf(ResultStatus.Success(mockProfileInfo))
 
-            viewModel.screenState.test {
-                assertEquals(ProfileInfoScreenState.Profile(mockProfileInfo), awaitItem())
-                cancelAndIgnoreRemainingEvents()
-            }
+            viewModel = createViewModel()
+
+            val result = viewModel.screenState.first { it is ProfileInfoScreenState.Profile }
+
+            assertEquals(ProfileInfoScreenState.Profile(mockProfileInfo), result)
             advanceUntilIdle()
         }
 
@@ -74,29 +77,36 @@ class ProfileInfoViewModelTest {
             val errorMessage = "Network error"
             coEvery { mockErrorMessageProvider.getErrorMessage(errorType) } returns errorMessage
 
-            profileInfoStateFlow.emit(ResultState.Error(errorType))
+            coEvery { mockProfileInfoUseCase.getProfileInfo } returns
+                flowOf(ResultStatus.Error(errorType))
 
-            viewModel.screenState.test {
-                assertEquals(ProfileInfoScreenState.Error(errorMessage), awaitItem())
-                cancelAndIgnoreRemainingEvents()
-            }
+            viewModel = createViewModel()
+
+            val result = viewModel.screenState.first { it is ProfileInfoScreenState.Error }
+
+            assertEquals(ProfileInfoScreenState.Error(errorMessage), result)
             advanceUntilIdle()
         }
 
     @Test
     fun `refreshedProfileInfo should emit Loading and trigger retry`() =
         runTest {
-            coEvery { mockProfileInfoUseCase.retry() } returns Unit
+            coEvery { mockProfileInfoUseCase.getProfileInfo } returns emptyFlow()
+            coEvery { mockProfileInfoUseCase.retry() } just Runs
 
-            viewModel.screenState.test {
-                profileInfoStateFlow.emit(ResultState.Error(mockk()))
-                viewModel.refreshedProfileInfo()
-                advanceUntilIdle()
-                assertEquals(ProfileInfoScreenState.Loading, awaitItem())
-                cancelAndIgnoreRemainingEvents()
-            }
+            viewModel = createViewModel()
+
+            viewModel.refreshedProfileInfo()
+            delay(100)
+
+            val result = viewModel.screenState.first { it is ProfileInfoScreenState.Loading }
+
+            assertEquals(ProfileInfoScreenState.Loading, result)
             advanceUntilIdle()
 
             coVerify { mockProfileInfoUseCase.retry() }
         }
+
+    private fun createViewModel(): ProfileInfoViewModel =
+        ProfileInfoViewModel(mockProfileInfoUseCase, mockErrorMessageProvider)
 }

@@ -9,4 +9,6 @@ class GetSubscriptionPostsUseCase
         private val repository: SubscriptionsFeedRepository,
     ) {
         operator fun invoke() = repository.getSubscriptionPosts
+
+        fun close() = repository.close()
     }

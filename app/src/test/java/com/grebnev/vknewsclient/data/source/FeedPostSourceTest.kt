@@ -15,6 +15,8 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class FeedPostSourceTest {
@@ -48,12 +50,14 @@ class FeedPostSourceTest {
             coEvery { mockApiService.loadRecommendations(any()) } returns mockResponse
             coEvery { mockMapper.mapResponseToFeedPost(mockResponse) } returns mockFeedPosts
 
-            feedPostSource.nextFromState.test {
-                assertEquals(null, awaitItem())
+            feedPostSource.hasNextFromState.test {
+                assertEquals(null, feedPostSource.nextFrom)
+                assertFalse(awaitItem())
 
                 val result = feedPostSource.loadRecommendationsFeed()
 
-                assertEquals("nextFromToken", awaitItem())
+                assertEquals("nextFromToken", feedPostSource.nextFrom)
+                assertTrue(awaitItem())
                 assertEquals(mockFeedPosts, result)
             }
             advanceUntilIdle()
@@ -76,14 +80,16 @@ class FeedPostSourceTest {
             coEvery { mockApiService.loadRecommendations(any(), "startFromToken") } returns mockResponse
             coEvery { mockMapper.mapResponseToFeedPost(mockResponse) } returns mockFeedPosts
 
-            feedPostSource._nextFromState.value = "startFromToken"
+            feedPostSource.nextFrom = "startFromToken"
 
-            feedPostSource.nextFromState.test {
-                assertEquals("startFromToken", awaitItem())
+            feedPostSource.hasNextFromState.test {
+                assertEquals("startFromToken", feedPostSource.nextFrom)
+                assertFalse(awaitItem())
 
                 val result = feedPostSource.loadRecommendationsFeed()
 
-                assertEquals("nextFromToken", awaitItem())
+                assertEquals("nextFromToken", feedPostSource.nextFrom)
+                assertTrue(awaitItem())
 
                 assertEquals(mockFeedPosts, result)
             }
@@ -112,12 +118,14 @@ class FeedPostSourceTest {
             } returns mockResponse
             coEvery { mockMapper.mapResponseToFeedPost(mockResponse) } returns mockFeedPosts
 
-            feedPostSource.nextFromState.test {
-                assertEquals(null, awaitItem())
+            feedPostSource.hasNextFromState.test {
+                assertEquals(null, feedPostSource.nextFrom)
+                assertFalse(awaitItem())
 
                 val result = feedPostSource.loadSubscriptionsFeed("123,456")
 
-                assertEquals("nextFromToken", awaitItem())
+                assertEquals("nextFromToken", feedPostSource.nextFrom)
+                assertTrue(awaitItem())
                 assertEquals(mockFeedPosts, result)
             }
             advanceUntilIdle()
@@ -150,14 +158,16 @@ class FeedPostSourceTest {
             } returns mockResponse
             coEvery { mockMapper.mapResponseToFeedPost(mockResponse) } returns mockFeedPosts
 
-            feedPostSource._nextFromState.value = "startFromToken"
+            feedPostSource.nextFrom = "startFromToken"
 
-            feedPostSource.nextFromState.test {
-                assertEquals("startFromToken", awaitItem())
+            feedPostSource.hasNextFromState.test {
+                assertEquals("startFromToken", feedPostSource.nextFrom)
+                assertFalse(awaitItem())
 
                 val result = feedPostSource.loadSubscriptionsFeed("123,456")
 
-                assertEquals("nextFromToken", awaitItem())
+                assertEquals("nextFromToken", feedPostSource.nextFrom)
+                assertTrue(awaitItem())
 
                 assertEquals(mockFeedPosts, result)
             }

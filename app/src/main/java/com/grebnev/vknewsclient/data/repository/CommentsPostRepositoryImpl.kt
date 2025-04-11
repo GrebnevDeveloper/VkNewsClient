@@ -2,7 +2,7 @@ package com.grebnev.vknewsclient.data.repository
 
 import com.grebnev.vknewsclient.core.handlers.ErrorHandler
 import com.grebnev.vknewsclient.core.wrappers.ErrorType
-import com.grebnev.vknewsclient.core.wrappers.ResultState
+import com.grebnev.vknewsclient.core.wrappers.ResultStatus
 import com.grebnev.vknewsclient.data.mapper.NewsFeedMapper
 import com.grebnev.vknewsclient.data.network.ApiService
 import com.grebnev.vknewsclient.data.source.AccessTokenSource
@@ -12,16 +12,14 @@ import com.grebnev.vknewsclient.domain.repository.CommentsPostRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.retry
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -43,16 +41,8 @@ class CommentsPostRepositoryImpl
             }
         }
 
-        override fun getComments(feedPost: FeedPost): StateFlow<ResultState<List<PostComment>, ErrorType>> =
-            loadComments(feedPost)
-                .stateIn(
-                    scope = coroutineScope,
-                    started = SharingStarted.Lazily,
-                    initialValue = ResultState.Initial,
-                )
-
         @OptIn(ExperimentalCoroutinesApi::class)
-        private fun loadComments(feedPost: FeedPost): Flow<ResultState<List<PostComment>, ErrorType>> =
+        override fun getComments(feedPost: FeedPost): Flow<ResultStatus<List<PostComment>, ErrorType>> =
             retryTrigger.flatMapLatest {
                 flow {
                     val response =
@@ -63,9 +53,9 @@ class CommentsPostRepositoryImpl
                         )
                     val postComments = mapper.mapResponseToPostComment(response)
                     if (postComments.isNotEmpty()) {
-                        emit(ResultState.Success(postComments) as ResultState<List<PostComment>, ErrorType>)
+                        emit(ResultStatus.Success(postComments) as ResultStatus<List<PostComment>, ErrorType>)
                     } else {
-                        emit(ResultState.Empty)
+                        emit(ResultStatus.Empty)
                     }
                 }.retry(ErrorHandler.MAX_COUNT_RETRY) {
                     delay(ErrorHandler.RETRY_TIMEOUT)
@@ -73,11 +63,15 @@ class CommentsPostRepositoryImpl
                 }.catch { throwable ->
                     Timber.e(throwable)
                     val errorType = ErrorHandler.getErrorType(throwable)
-                    emit(ResultState.Error(errorType))
+                    emit(ResultStatus.Error(errorType))
                 }
             }
 
         override suspend fun retry() {
             retryTrigger.emit(Unit)
+        }
+
+        override fun close() {
+            coroutineScope.cancel()
         }
     }
