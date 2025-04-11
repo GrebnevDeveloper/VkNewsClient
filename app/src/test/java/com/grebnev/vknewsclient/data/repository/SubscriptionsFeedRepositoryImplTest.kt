@@ -33,7 +33,7 @@ class SubscriptionsFeedRepositoryImplTest {
 
     private lateinit var repository: SubscriptionsFeedRepositoryImpl
 
-    private lateinit var nextFromState: MutableStateFlow<String?>
+    private lateinit var nextFromState: MutableStateFlow<Boolean>
     private lateinit var subscriptionsState: MutableStateFlow<Subscription>
     private lateinit var mockFeedPost: FeedPost
 
@@ -48,7 +48,7 @@ class SubscriptionsFeedRepositoryImplTest {
                 coEvery { getAccessToken() } returns "mockToken"
             }
 
-        nextFromState = MutableStateFlow(null)
+        nextFromState = MutableStateFlow(false)
         subscriptionsState =
             MutableStateFlow(
                 Subscription(
@@ -71,7 +71,7 @@ class SubscriptionsFeedRepositoryImplTest {
                 isSubscribed = true,
             )
 
-        coEvery { mockFeedPostSource.nextFromState } returns nextFromState
+        coEvery { mockFeedPostSource.hasNextFromState } returns nextFromState
         coEvery { mockSubscriptionsSource.getSubscriptionsState() } returns subscriptionsState
 
         repository =
@@ -91,7 +91,6 @@ class SubscriptionsFeedRepositoryImplTest {
             coEvery { mockFeedPostSource.loadSubscriptionsFeed(any()) } returns mockFeedPosts
 
             repository.getSubscriptionPosts.test {
-                assertEquals(ResultStatus.Success(emptyList<FeedPost>()), awaitItem())
                 assertEquals(ResultStatus.Success(mockFeedPosts), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
@@ -106,7 +105,6 @@ class SubscriptionsFeedRepositoryImplTest {
             subscriptionsState.value = Subscription()
 
             repository.getSubscriptionPosts.test {
-                assertEquals(ResultStatus.Success(emptyList<FeedPost>()), awaitItem())
                 assertEquals(ResultStatus.Empty, awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
@@ -120,7 +118,6 @@ class SubscriptionsFeedRepositoryImplTest {
             coEvery { mockFeedPostSource.loadSubscriptionsFeed(any()) } throws throwable
 
             repository.getSubscriptionPosts.test(timeout = 13.seconds) {
-                assertEquals(ResultStatus.Success(emptyList<FeedPost>()), awaitItem())
                 assertEquals(ResultStatus.Error(ErrorType.NETWORK_ERROR), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
@@ -139,7 +136,6 @@ class SubscriptionsFeedRepositoryImplTest {
             advanceUntilIdle()
 
             repository.getSubscriptionPosts.test {
-                assertEquals(ResultStatus.Success(emptyList<FeedPost>()), awaitItem())
                 assertEquals(ResultStatus.Success(mockFeedPosts), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
@@ -156,7 +152,6 @@ class SubscriptionsFeedRepositoryImplTest {
             coEvery { mockApiService.ignoreFeedPost(any(), 123L, 1L) } returns Unit
 
             repository.getSubscriptionPosts.test {
-                assertEquals(ResultStatus.Success(emptyList<FeedPost>()), awaitItem())
                 assertEquals(ResultStatus.Success(mockFeedPosts), awaitItem())
                 repository.deletePost(mockFeedPost)
                 advanceUntilIdle()
@@ -176,7 +171,6 @@ class SubscriptionsFeedRepositoryImplTest {
             coEvery { mockLikesSource.changeLikeStatus(mockFeedPost) } returns updatedFeedPost
 
             repository.getSubscriptionPosts.test {
-                assertEquals(ResultStatus.Success(emptyList<FeedPost>()), awaitItem())
                 assertEquals(ResultStatus.Success(mockFeedPosts), awaitItem())
                 repository.changeLikeStatus(mockFeedPost)
                 advanceUntilIdle()
@@ -198,7 +192,6 @@ class SubscriptionsFeedRepositoryImplTest {
             advanceUntilIdle()
 
             repository.getSubscriptionPosts.test {
-                assertEquals(ResultStatus.Success(emptyList<FeedPost>()), awaitItem())
                 assertEquals(ResultStatus.Success(listOf(updatedFeedPost)), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }

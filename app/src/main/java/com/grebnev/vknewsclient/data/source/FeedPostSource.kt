@@ -17,27 +17,31 @@ class FeedPostSource
         private val mapper: NewsFeedMapper,
     ) {
         @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-        internal val _nextFromState = MutableStateFlow<String?>(null)
-        val nextFromState: StateFlow<String?> = _nextFromState.asStateFlow()
+        internal val _hasNextFromState = MutableStateFlow<Boolean>(false)
+        val hasNextFromState: StateFlow<Boolean> = _hasNextFromState.asStateFlow()
+
+        @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+        internal var nextFrom: String? = null
 
         suspend fun loadRecommendationsFeed(): List<FeedPost> {
-            val startFrom = nextFromState.value
+            val currentNextFrom = nextFrom
             val response =
-                if (startFrom == null) {
+                if (currentNextFrom == null) {
                     apiService.loadRecommendations(accessToken.getAccessToken())
                 } else {
-                    apiService.loadRecommendations(accessToken.getAccessToken(), startFrom)
+                    apiService.loadRecommendations(accessToken.getAccessToken(), currentNextFrom)
                 }
 
-            _nextFromState.value = response.newsFeedContent.nextFrom
+            nextFrom = response.newsFeedContent.nextFrom
+            _hasNextFromState.value = nextFrom != null
 
             return mapper.mapResponseToFeedPost(response)
         }
 
         suspend fun loadSubscriptionsFeed(sourceIds: String): List<FeedPost> {
-            val startFrom = nextFromState.value
+            val currentNextFrom = nextFrom
             val response =
-                if (startFrom == null) {
+                if (currentNextFrom == null) {
                     apiService.loadSubscriptionPosts(
                         token = accessToken.getAccessToken(),
                         sourceIds = sourceIds,
@@ -46,11 +50,12 @@ class FeedPostSource
                     apiService.loadSubscriptionPosts(
                         token = accessToken.getAccessToken(),
                         sourceIds = sourceIds,
-                        nextFrom = startFrom,
+                        nextFrom = currentNextFrom,
                     )
                 }
 
-            _nextFromState.value = response.newsFeedContent.nextFrom
+            nextFrom = response.newsFeedContent.nextFrom
+            _hasNextFromState.value = nextFrom != null
 
             return mapper.mapResponseToFeedPost(response)
         }

@@ -18,6 +18,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.launch
@@ -36,7 +37,7 @@ class RecommendationsFeedRepositoryImpl
         private val coroutineScope = CoroutineScope(Dispatchers.Default)
 
         private val nextDataNeededEvents = MutableSharedFlow<Unit>(replay = 1)
-        private val nextFromState = feedPostSource.nextFromState
+        private val hasNextFromState = feedPostSource.hasNextFromState
         private val subscriptionsState = subscriptionsSource.getSubscriptionsState()
 
         private val _feedPosts = mutableListOf<FeedPost>()
@@ -49,9 +50,7 @@ class RecommendationsFeedRepositoryImpl
             flow {
                 nextDataNeededEvents.emit(Unit)
                 nextDataNeededEvents.collect {
-                    val startFrom = nextFromState.value
-
-                    if (startFrom == null && feedPosts.isNotEmpty()) {
+                    if (!hasNextFromState.value && feedPosts.isNotEmpty()) {
                         emit(ResultStatus.Success(feedPosts) as ResultStatus<List<FeedPost>, ErrorType>)
                         return@collect
                     }
@@ -68,7 +67,7 @@ class RecommendationsFeedRepositoryImpl
                         }
                     }
 
-                    emit(ResultStatus.Success(data = feedPosts, nextDataLoading = true))
+                    emit(ResultStatus.Success(feedPosts))
                 }
             }.retryWhen { cause, attempt ->
                 if (attempt <= ErrorHandler.MAX_COUNT_RETRY) {
@@ -129,6 +128,8 @@ class RecommendationsFeedRepositoryImpl
         override suspend fun changeSubscriptionStatus(feedPost: FeedPost) {
             subscriptionsSource.changeSubscriptionStatus(feedPost)
         }
+
+        override fun hasNextDataLoading(): StateFlow<Boolean> = hasNextFromState
 
         override fun close() {
             coroutineScope.cancel()

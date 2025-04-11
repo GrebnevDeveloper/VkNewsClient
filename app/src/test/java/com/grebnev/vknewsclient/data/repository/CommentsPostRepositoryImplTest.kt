@@ -62,7 +62,7 @@ class CommentsPostRepositoryImplTest {
             coEvery { mockMapper.mapResponseToPostComment(any()) } returns emptyList()
 
             repository.getComments(mockFeedPost).test {
-                assertEquals(ResultStatus.Initial, awaitItem())
+                assertEquals(ResultStatus.Empty, awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
             advanceUntilIdle()
@@ -82,7 +82,6 @@ class CommentsPostRepositoryImplTest {
             coEvery { mockMapper.mapResponseToPostComment(mockCommentsResponse) } returns mockComments
 
             repository.getComments(mockFeedPost).test {
-                assertEquals(ResultStatus.Initial, awaitItem())
                 assertEquals(ResultStatus.Success(mockComments), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
@@ -97,7 +96,6 @@ class CommentsPostRepositoryImplTest {
             coEvery { mockMapper.mapResponseToPostComment(mockCommentsResponse) } returns emptyList()
 
             repository.getComments(mockFeedPost).test {
-                assertEquals(ResultStatus.Initial, awaitItem())
                 assertEquals(ResultStatus.Empty, awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
@@ -116,10 +114,9 @@ class CommentsPostRepositoryImplTest {
             coEvery { mockApiService.loadComments(any(), 123L, 1L) } returns mockCommentsResponse
             coEvery { mockMapper.mapResponseToPostComment(mockCommentsResponse) } returns mockComments
 
+            repository.retry()
+
             repository.getComments(mockFeedPost).test {
-                assertEquals(ResultStatus.Initial, awaitItem())
-                repository.retry()
-                advanceUntilIdle()
                 assertEquals(ResultStatus.Success(mockComments), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
@@ -140,7 +137,6 @@ class CommentsPostRepositoryImplTest {
             every { ErrorHandler.getErrorType(exception) } returns errorType
 
             repository.getComments(mockFeedPost).test(timeout = 13.seconds) {
-                assertEquals(ResultStatus.Initial, awaitItem())
                 assertEquals(ResultStatus.Error(errorType), awaitItem())
             }
             advanceUntilIdle()

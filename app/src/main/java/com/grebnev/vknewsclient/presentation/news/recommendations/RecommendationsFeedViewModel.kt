@@ -10,6 +10,7 @@ import com.grebnev.vknewsclient.domain.usecases.ChangeLikeStatusUseCase
 import com.grebnev.vknewsclient.domain.usecases.ChangeSubscriptionStatusUseCase
 import com.grebnev.vknewsclient.domain.usecases.DeletePostUseCase
 import com.grebnev.vknewsclient.domain.usecases.GetRecommendationsUseCase
+import com.grebnev.vknewsclient.domain.usecases.HasNextDataLoadingUseCase
 import com.grebnev.vknewsclient.domain.usecases.LoadNextDataUseCase
 import com.grebnev.vknewsclient.presentation.base.ErrorMessageProvider
 import com.grebnev.vknewsclient.presentation.news.base.NewsFeedViewModel
@@ -30,6 +31,7 @@ class RecommendationsFeedViewModel
         private val loadNextDataUseCase: LoadNextDataUseCase,
         private val changeLikeStatusUseCase: ChangeLikeStatusUseCase,
         private val deletePostUseCase: DeletePostUseCase,
+        private val hasNextDataLoadingUseCase: HasNextDataLoadingUseCase,
         private val changeSubscriptionStatusUseCase: ChangeSubscriptionStatusUseCase,
         private val errorMessageProvider: ErrorMessageProvider,
     ) : NewsFeedViewModel() {
@@ -74,7 +76,7 @@ class RecommendationsFeedViewModel
                     if (currentFeedPost.isNotEmpty()) {
                         RecommendationsFeedScreenState.Posts(
                             posts = currentFeedPost,
-                            nextDataLoading = recommendationsState.nextDataLoading,
+                            nextDataLoading = hasNextDataLoadingUseCase(NewsFeedType.RECOMMENDATIONS).value,
                         )
                     } else {
                         RecommendationsFeedScreenState.Loading

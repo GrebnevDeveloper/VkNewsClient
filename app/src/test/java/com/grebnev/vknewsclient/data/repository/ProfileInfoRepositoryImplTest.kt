@@ -49,19 +49,6 @@ class ProfileInfoRepositoryImplTest {
     }
 
     @Test
-    fun `getProfileInfo should emit Loading initially`() =
-        runTest {
-            coEvery { mockApiService.loadProfileInfo(any()) } returns mockk()
-            coEvery { mockMapper.mapResponseToProfileInfo(any()) } returns mockk()
-
-            repository.getProfileInfo.test {
-                assertEquals(ResultStatus.Initial, awaitItem())
-                cancelAndIgnoreRemainingEvents()
-            }
-            advanceUntilIdle()
-        }
-
-    @Test
     fun `getProfileInfo should emit Success state when apiService returns valid response`() =
         runTest {
             val mockProfileInfoResponse = mockk<ProfileInfoResponseDto>()
@@ -77,7 +64,6 @@ class ProfileInfoRepositoryImplTest {
             coEvery { mockMapper.mapResponseToProfileInfo(mockProfileInfoResponse) } returns mockProfileInfo
 
             repository.getProfileInfo.test {
-                assertEquals(ResultStatus.Initial, awaitItem())
                 assertEquals(ResultStatus.Success(mockProfileInfo), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
@@ -99,10 +85,9 @@ class ProfileInfoRepositoryImplTest {
             coEvery { mockApiService.loadProfileInfo(any()) } returns mockProfileInfoResponse
             coEvery { mockMapper.mapResponseToProfileInfo(mockProfileInfoResponse) } returns mockProfileInfo
 
+            repository.retry()
+
             repository.getProfileInfo.test {
-                assertEquals(ResultStatus.Initial, awaitItem())
-                repository.retry()
-                advanceUntilIdle()
                 assertEquals(ResultStatus.Success(mockProfileInfo), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
@@ -123,7 +108,6 @@ class ProfileInfoRepositoryImplTest {
             every { ErrorHandler.getErrorType(exception) } returns errorType
 
             repository.getProfileInfo.test(timeout = 13.seconds) {
-                assertEquals(ResultStatus.Initial, awaitItem())
                 assertEquals(ResultStatus.Error(errorType), awaitItem())
             }
             advanceUntilIdle()

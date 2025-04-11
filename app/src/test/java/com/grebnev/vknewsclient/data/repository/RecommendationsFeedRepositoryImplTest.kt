@@ -34,7 +34,7 @@ class RecommendationsFeedRepositoryImplTest {
 
     private lateinit var repository: RecommendationsFeedRepositoryImpl
 
-    private lateinit var nextFromState: MutableStateFlow<String?>
+    private lateinit var nextFromState: MutableStateFlow<Boolean>
     private lateinit var subscriptionsState: MutableStateFlow<Subscription>
     private lateinit var mockFeedPost: FeedPost
 
@@ -49,7 +49,7 @@ class RecommendationsFeedRepositoryImplTest {
                 coEvery { getAccessToken() } returns "mockToken"
             }
 
-        nextFromState = MutableStateFlow(null)
+        nextFromState = MutableStateFlow(false)
         subscriptionsState =
             MutableStateFlow(
                 Subscription(
@@ -72,7 +72,7 @@ class RecommendationsFeedRepositoryImplTest {
                 isSubscribed = true,
             )
 
-        every { mockFeedPostSource.nextFromState } returns nextFromState
+        every { mockFeedPostSource.hasNextFromState } returns nextFromState
         every { mockSubscriptionsSource.getSubscriptionsState() } returns subscriptionsState
 
         repository =
@@ -92,7 +92,6 @@ class RecommendationsFeedRepositoryImplTest {
             coEvery { mockFeedPostSource.loadRecommendationsFeed() } returns mockFeedPosts
 
             repository.getRecommendations.test {
-                assertEquals(ResultStatus.Success(emptyList<FeedPost>()), awaitItem())
                 assertEquals(ResultStatus.Success(mockFeedPosts), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
@@ -106,7 +105,6 @@ class RecommendationsFeedRepositoryImplTest {
             coEvery { mockFeedPostSource.loadRecommendationsFeed() } throws throwable
 
             repository.getRecommendations.test(timeout = 13.seconds) {
-                assertEquals(ResultStatus.Success(emptyList<FeedPost>()), awaitItem())
                 assertEquals(ResultStatus.Error(ErrorType.NETWORK_ERROR), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
@@ -123,7 +121,6 @@ class RecommendationsFeedRepositoryImplTest {
             advanceUntilIdle()
 
             repository.getRecommendations.test {
-                assertEquals(ResultStatus.Success(emptyList<FeedPost>()), awaitItem())
                 assertEquals(ResultStatus.Success(mockFeedPosts), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
@@ -140,7 +137,6 @@ class RecommendationsFeedRepositoryImplTest {
             coEvery { mockApiService.ignoreFeedPost(any(), 123L, 1L) } returns Unit
 
             repository.getRecommendations.test {
-                assertEquals(ResultStatus.Success(emptyList<FeedPost>()), awaitItem())
                 assertEquals(ResultStatus.Success(mockFeedPosts), awaitItem())
                 repository.deletePost(mockFeedPost)
                 advanceUntilIdle()
@@ -161,7 +157,6 @@ class RecommendationsFeedRepositoryImplTest {
             coEvery { mockLikesSource.changeLikeStatus(mockFeedPost) } returns updatedFeedPost
 
             repository.getRecommendations.test {
-                assertEquals(ResultStatus.Success(emptyList<FeedPost>()), awaitItem())
                 assertEquals(ResultStatus.Success(mockFeedPosts), awaitItem())
                 repository.changeLikeStatus(mockFeedPost)
                 advanceUntilIdle()
@@ -183,7 +178,6 @@ class RecommendationsFeedRepositoryImplTest {
             advanceUntilIdle()
 
             repository.getRecommendations.test {
-                assertEquals(ResultStatus.Success(emptyList<FeedPost>()), awaitItem())
                 assertEquals(ResultStatus.Success(listOf(updatedFeedPost)), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }

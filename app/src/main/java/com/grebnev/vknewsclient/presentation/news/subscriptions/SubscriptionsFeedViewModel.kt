@@ -10,6 +10,7 @@ import com.grebnev.vknewsclient.domain.usecases.ChangeLikeStatusUseCase
 import com.grebnev.vknewsclient.domain.usecases.ChangeSubscriptionStatusUseCase
 import com.grebnev.vknewsclient.domain.usecases.DeletePostUseCase
 import com.grebnev.vknewsclient.domain.usecases.GetSubscriptionPostsUseCase
+import com.grebnev.vknewsclient.domain.usecases.HasNextDataLoadingUseCase
 import com.grebnev.vknewsclient.domain.usecases.LoadNextDataUseCase
 import com.grebnev.vknewsclient.presentation.base.ErrorMessageProvider
 import com.grebnev.vknewsclient.presentation.news.base.NewsFeedViewModel
@@ -31,6 +32,7 @@ class SubscriptionsFeedViewModel
         private val changeLikeStatusUseCase: ChangeLikeStatusUseCase,
         private val deletePostUseCase: DeletePostUseCase,
         private val changeSubscriptionStatusUseCase: ChangeSubscriptionStatusUseCase,
+        private val hasNextDataLoadingUseCase: HasNextDataLoadingUseCase,
         private val errorMessageProvider: ErrorMessageProvider,
     ) : NewsFeedViewModel() {
         private val exceptionHandler =
@@ -66,7 +68,7 @@ class SubscriptionsFeedViewModel
                     if (currentFeedPosts.isNotEmpty()) {
                         SubscriptionsScreenState.Posts(
                             posts = currentFeedPosts,
-                            nextDataLoading = subscriptionState.nextDataLoading,
+                            nextDataLoading = hasNextDataLoadingUseCase(NewsFeedType.SUBSCRIPTIONS).value,
                         )
                     } else {
                         SubscriptionsScreenState.Loading
