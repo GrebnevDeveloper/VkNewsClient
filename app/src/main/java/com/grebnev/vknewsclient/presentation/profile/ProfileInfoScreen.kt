@@ -23,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.grebnev.vknewsclient.R
@@ -31,7 +30,7 @@ import com.grebnev.vknewsclient.domain.entity.ProfileInfo
 import com.grebnev.vknewsclient.presentation.base.ErrorScreenWithRetry
 import com.grebnev.vknewsclient.presentation.base.LoadingIndicator
 import com.grebnev.vknewsclient.presentation.getApplicationComponent
-import com.grebnev.vknewsclient.ui.theme.VkContainer
+import com.grebnev.vknewsclient.ui.theme.vkContainer
 
 @Composable
 fun ProfileInfoScreen(onLogout: () -> Unit) {
@@ -79,10 +78,11 @@ private fun ProfileInfoScreenContent(
 private fun ProfileInfo(
     profileInfo: ProfileInfo,
     onLogout: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier =
-            Modifier
+            modifier
                 .fillMaxSize()
                 .padding(
                     horizontal = 16.dp,
@@ -94,36 +94,34 @@ private fun ProfileInfo(
         AsyncImage(
             model = profileInfo.avatarUrl,
             modifier =
-                Modifier
+                modifier
                     .fillMaxWidth()
                     .wrapContentHeight(),
-            contentDescription = "Avatar profile",
+            contentDescription = null,
         )
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = modifier.height(10.dp))
         Row {
             Text(
-                fontSize = 28.sp,
                 text = profileInfo.firstName,
-                color = MaterialTheme.colorScheme.onSecondary,
+                style = MaterialTheme.typography.headlineMedium,
             )
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = modifier.width(10.dp))
             Text(
-                fontSize = 28.sp,
                 text = profileInfo.lastName,
-                color = MaterialTheme.colorScheme.onSecondary,
+                style = MaterialTheme.typography.headlineMedium,
             )
         }
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = modifier.height(10.dp))
         Button(
             modifier =
-                Modifier
+                modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
                     .padding(10.dp),
             onClick = { onLogout() },
             colors =
                 ButtonColors(
-                    containerColor = VkContainer,
+                    containerColor = vkContainer,
                     contentColor = Color.White,
                     disabledContentColor = ButtonDefaults.buttonColors().disabledContentColor,
                     disabledContainerColor = ButtonDefaults.buttonColors().disabledContainerColor,

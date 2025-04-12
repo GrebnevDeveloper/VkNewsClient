@@ -15,4 +15,6 @@
     <string name="no_subscriptions">No news from subscriptions</string>
     <string name="no_recommendations">No news from recommendations</string>
     <string name="no_post_to_display">There are no posts to display</string>
+    <string name="subscribe">Subscribe</string>
+    <string name="unsubscribe">Unsubscribe</string>
 </resources>

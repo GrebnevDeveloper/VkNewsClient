@@ -6,14 +6,13 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.grebnev.vknewsclient.ui.theme.DarkBlue
 
 @Composable
-fun LoadingIndicator() {
+fun LoadingIndicator(modifier: Modifier = Modifier) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
-        CircularProgressIndicator(color = DarkBlue)
+        CircularProgressIndicator()
     }
 }

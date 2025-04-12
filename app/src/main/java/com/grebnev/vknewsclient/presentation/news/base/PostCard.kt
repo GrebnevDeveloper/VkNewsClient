@@ -34,13 +34,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.grebnev.vknewsclient.R
 import com.grebnev.vknewsclient.domain.entity.FeedPost
 import com.grebnev.vknewsclient.domain.entity.StatisticItem
 import com.grebnev.vknewsclient.domain.entity.StatisticType
-import com.grebnev.vknewsclient.ui.theme.DarkRed
+import com.grebnev.vknewsclient.ui.theme.darkRed
 
 @Composable
 fun PostCard(
@@ -48,23 +49,27 @@ fun PostCard(
     onCommentsClickListener: (StatisticItem) -> Unit,
     onLikesClickListener: (StatisticItem) -> Unit,
     onSubscribeClickListener: (FeedPost) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Card {
-        Column(modifier = Modifier.padding(8.dp)) {
+        Column(modifier = modifier.padding(8.dp)) {
             PostHeader(feedPost, onSubscribeClickListener)
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(text = feedPost.contentText)
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = modifier.height(10.dp))
+            Text(
+                text = feedPost.contentText,
+                style = MaterialTheme.typography.bodyLarge,
+            )
+            Spacer(modifier = modifier.height(10.dp))
             AsyncImage(
                 model = feedPost.contentImageUrl,
                 modifier =
-                    Modifier
+                    modifier
                         .fillMaxWidth()
                         .wrapContentHeight(),
-                contentDescription = "Post content image",
+                contentDescription = null,
                 contentScale = ContentScale.FillWidth,
             )
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = modifier.height(10.dp))
             Statistics(
                 statisticList = feedPost.statisticsList,
                 onCommentsClickListener = onCommentsClickListener,
@@ -81,9 +86,10 @@ private fun Statistics(
     onCommentsClickListener: (StatisticItem) -> Unit,
     onLikesClickListener: (StatisticItem) -> Unit,
     isFavorite: Boolean,
+    modifier: Modifier = Modifier,
 ) {
     Row {
-        Row(modifier = Modifier.weight(1f)) {
+        Row(modifier = modifier.weight(1f)) {
             val viewsItem = statisticList.getItemByType(StatisticType.VIEWS)
             IconWithText(
                 iconResId = R.drawable.ic_views_count,
@@ -91,7 +97,7 @@ private fun Statistics(
             )
         }
         Row(
-            modifier = Modifier.weight(1f),
+            modifier = modifier.weight(1f),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             val sharesItem = statisticList.getItemByType(StatisticType.SHARES)
@@ -110,7 +116,7 @@ private fun Statistics(
                 iconResId = if (isFavorite) R.drawable.ic_like_set else R.drawable.ic_like,
                 text = formatStatisticCount(likesItem.count),
                 onItemClickListener = { onLikesClickListener(likesItem) },
-                tint = if (isFavorite) DarkRed else MaterialTheme.colorScheme.onSecondary,
+                tint = if (isFavorite) darkRed else MaterialTheme.colorScheme.secondary,
             )
         }
     }
@@ -135,7 +141,7 @@ private fun IconWithText(
     iconResId: Int,
     text: String,
     onItemClickListener: (() -> Unit)? = null,
-    tint: Color = MaterialTheme.colorScheme.onSecondary,
+    tint: Color = MaterialTheme.colorScheme.secondary,
 ) {
     val modifier =
         if (onItemClickListener == null) {
@@ -158,7 +164,7 @@ private fun IconWithText(
         Spacer(modifier = Modifier.width(4.dp))
         Text(
             text = text,
-            color = MaterialTheme.colorScheme.onSecondary,
+            style = MaterialTheme.typography.labelLarge,
         )
     }
 }
@@ -167,40 +173,40 @@ private fun IconWithText(
 private fun PostHeader(
     feedPost: FeedPost,
     onSubscribeClickListener: (FeedPost) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
     Row(
         modifier =
-            Modifier
+            modifier
                 .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         AsyncImage(
             model = feedPost.communityImageUrl,
             modifier =
-                Modifier
+                modifier
                     .clip(CircleShape)
                     .size(50.dp),
-            contentDescription = "Post community thumbnail",
+            contentDescription = null,
         )
-        Spacer(modifier = Modifier.width(5.dp))
-        Column(modifier = Modifier.weight(1f)) {
+        Spacer(modifier = modifier.width(5.dp))
+        Column(modifier = modifier.weight(1f)) {
             Text(
                 text = feedPost.communityName,
-                color = MaterialTheme.colorScheme.onPrimary,
+                style = MaterialTheme.typography.titleMedium,
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = modifier.height(4.dp))
             Text(
                 text = feedPost.publicationDate,
-                color = MaterialTheme.colorScheme.onSecondary,
+                style = MaterialTheme.typography.labelSmall,
             )
         }
         Box {
             IconButton(onClick = { expanded = true }) {
                 Icon(
                     imageVector = Icons.Rounded.MoreVert,
-                    contentDescription = "More vert",
-                    tint = MaterialTheme.colorScheme.onSecondary,
+                    contentDescription = null,
                 )
             }
             DropdownMenu(
@@ -208,7 +214,15 @@ private fun PostHeader(
                 onDismissRequest = { expanded = false },
             ) {
                 DropdownMenuItem(
-                    text = { Text(if (!feedPost.isSubscribed) "Subscribe" else "Unsubscribe") },
+                    text = {
+                        Text(
+                            if (!feedPost.isSubscribed) {
+                                stringResource(R.string.subscribe)
+                            } else {
+                                stringResource(R.string.unsubscribe)
+                            },
+                        )
+                    },
                     onClick = { onSubscribeClickListener(feedPost) },
                     leadingIcon = {
                         Icon(
@@ -221,7 +235,6 @@ private fun PostHeader(
                                     },
                                 ),
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSecondary,
                         )
                     },
                 )

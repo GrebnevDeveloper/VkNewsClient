@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -18,6 +17,8 @@ import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,15 +29,17 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.grebnev.vknewsclient.R
 import com.grebnev.vknewsclient.domain.entity.FeedPost
-import com.grebnev.vknewsclient.ui.theme.DarkBlue
+import com.grebnev.vknewsclient.presentation.base.LoadingIndicator
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FeedPosts(
     viewModel: NewsFeedViewModel,
@@ -50,6 +53,8 @@ fun FeedPosts(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     val feedPostState = rememberLazyListState()
+
+    val scrollBehaviorTopBar = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     LaunchedEffect(errorMessage) {
         errorMessage?.let { message ->
@@ -74,7 +79,13 @@ fun FeedPosts(
     }
 
     Scaffold(
-        topBar = { TopBar(titleTopBar) },
+        modifier = Modifier.nestedScroll(scrollBehaviorTopBar.nestedScrollConnection),
+        topBar = {
+            TopBar(
+                titleTopBar = titleTopBar,
+                scrollBehavior = scrollBehaviorTopBar,
+            )
+        },
         snackbarHost = {
             SnackbarHost(
                 hostState = snackbarHostState,
@@ -124,7 +135,12 @@ fun FeedPosts(
                 }
                 item(contentType = "loading") {
                     if (nextDataIsLoading) {
-                        LoadingIndicator()
+                        LoadingIndicator(
+                            modifier =
+                                Modifier
+                                    .padding(bottom = 100.dp)
+                                    .fillMaxWidth(),
+                        )
                     } else {
                         EmptyState()
                     }
@@ -135,37 +151,31 @@ fun FeedPosts(
 }
 
 @Composable
-private fun LoadingIndicator() {
+private fun EmptyState(modifier: Modifier = Modifier) {
     Box(
         modifier =
-            Modifier
+            modifier
                 .padding(bottom = 100.dp)
                 .fillMaxWidth(),
         contentAlignment = Alignment.Center,
     ) {
-        CircularProgressIndicator(color = DarkBlue)
-    }
-}
-
-@Composable
-private fun EmptyState() {
-    Box(
-        modifier =
-            Modifier
-                .padding(bottom = 100.dp)
-                .fillMaxWidth(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(stringResource(R.string.no_post_to_display), style = MaterialTheme.typography.bodyMedium)
+        Text(
+            text = stringResource(R.string.no_post_to_display),
+            style = MaterialTheme.typography.bodyMedium,
+        )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TopBar(titleTopBar: String) {
+private fun TopBar(
+    titleTopBar: String,
+    scrollBehavior: TopAppBarScrollBehavior,
+) {
     TopAppBar(
         title = {
             Text(titleTopBar)
         },
+        scrollBehavior = scrollBehavior,
     )
 }
