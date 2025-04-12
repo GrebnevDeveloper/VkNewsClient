@@ -2,11 +2,11 @@
 <resources>
 
     <style name="Theme.VkNewsClient.SplashScreen" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/black</item>
+        <item name="windowSplashScreenBackground">@color/background_splash_screen</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/vk_v2</item>
         <item name="windowSplashScreenIconBackgroundColor">@color/background_vk</item>
         <item name="postSplashScreenTheme">@style/Theme.VkNewsClient</item>
     </style>
-    
+
     <style name="Theme.VkNewsClient" parent="android:Theme.Material.Light.NoActionBar" />
 </resources>

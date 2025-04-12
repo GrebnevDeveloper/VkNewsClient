@@ -32,7 +32,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.grebnev.vknewsclient.R
@@ -66,6 +65,7 @@ private fun CommentsScreenContent(
     screenState: State<CommentsScreenState>,
     onBackPressed: () -> Unit,
     viewModel: CommentsViewModel,
+    modifier: Modifier = Modifier,
 ) {
     when (val currentState = screenState.value) {
         is CommentsScreenState.Comments -> {
@@ -91,7 +91,7 @@ private fun CommentsScreenContent(
 
         is CommentsScreenState.NoComments -> {
             Box(
-                modifier = Modifier.fillMaxSize(),
+                modifier = modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(stringResource(R.string.no_comments))
@@ -105,6 +105,7 @@ private fun CommentsScreenContent(
 private fun PostComments(
     comments: List<PostComment>,
     onBackPressed: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Scaffold(
         topBar = {
@@ -126,14 +127,14 @@ private fun PostComments(
         },
     ) { paddingValues ->
         LazyColumn(
-            modifier = Modifier.padding(paddingValues),
+            modifier = modifier.padding(paddingValues),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding =
                 PaddingValues(
                     top = 16.dp,
                     start = 8.dp,
                     end = 8.dp,
-                    bottom = 72.dp,
+                    bottom = 80.dp,
                 ),
         ) {
             items(items = comments, key = { it.id }) { comment ->
@@ -144,10 +145,13 @@ private fun PostComments(
 }
 
 @Composable
-private fun CommentItem(comment: PostComment) {
+private fun CommentItem(
+    comment: PostComment,
+    modifier: Modifier = Modifier,
+) {
     Row(
         modifier =
-            Modifier
+            modifier
                 .fillMaxWidth()
                 .padding(
                     horizontal = 16.dp,
@@ -156,7 +160,7 @@ private fun CommentItem(comment: PostComment) {
     ) {
         AsyncImage(
             modifier =
-                Modifier
+                modifier
                     .size(40.dp)
                     .clip(CircleShape),
             model = comment.authorAvatarUrl,
@@ -166,20 +170,17 @@ private fun CommentItem(comment: PostComment) {
         Column {
             Text(
                 text = comment.authorName,
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 12.sp,
+                style = MaterialTheme.typography.titleMedium,
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = comment.commentText,
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 14.sp,
+                style = MaterialTheme.typography.bodyMedium,
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = comment.publicationDate,
-                color = MaterialTheme.colorScheme.onSecondary,
-                fontSize = 12.sp,
+                style = MaterialTheme.typography.labelSmall,
             )
         }
     }
