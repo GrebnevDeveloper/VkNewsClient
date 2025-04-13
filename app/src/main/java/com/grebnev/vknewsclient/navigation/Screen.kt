@@ -17,12 +17,17 @@ sealed class Screen(
 
     data object Profile : Screen(ROUTE_PROFILE)
 
-    data object Comments : Screen(ROUTE_COMMENTS) {
-        private const val ROUTE_FOR_ARGS = "comments"
-
+    data object RecommendationsComments : Screen(ROUTE_RECOMMENDATIONS_COMMENTS) {
         fun getRouteWithArgs(feedPost: FeedPost): String {
             val feedPostJson = Uri.encode(Gson().toJson(feedPost))
-            return "$ROUTE_FOR_ARGS/$feedPostJson"
+            return "$ROUTE_RECOMMENDATIONS_COMMENTS_FOR_ARGS/$feedPostJson"
+        }
+    }
+
+    data object SubscriptionsComments : Screen(ROUTE_SUBSCRIPTIONS_COMMENTS) {
+        fun getRouteWithArgs(feedPost: FeedPost): String {
+            val feedPostJson = Uri.encode(Gson().toJson(feedPost))
+            return "$ROUTE_SUBSCRIPTIONS_COMMENTS_FOR_ARGS/$feedPostJson"
         }
     }
 
@@ -31,7 +36,10 @@ sealed class Screen(
 
         const val ROUTE_RECOMMENDATIONS_HOME = "recommendations_home"
         const val ROUTE_SUBSCRIPTIONS_FEED = "subscriptions_feed"
-        const val ROUTE_COMMENTS = "comments/{$KEY_FEED_POST}"
+        const val ROUTE_RECOMMENDATIONS_COMMENTS_FOR_ARGS = "recommendations_comments"
+        const val ROUTE_SUBSCRIPTIONS_COMMENTS_FOR_ARGS = "subscriptions_comments"
+        const val ROUTE_RECOMMENDATIONS_COMMENTS = "$ROUTE_RECOMMENDATIONS_COMMENTS_FOR_ARGS/{$KEY_FEED_POST}"
+        const val ROUTE_SUBSCRIPTIONS_COMMENTS = "$ROUTE_SUBSCRIPTIONS_COMMENTS_FOR_ARGS/{$KEY_FEED_POST}"
         const val ROUTE_RECOMMENDATIONS_FEED = "recommendations_feed"
         const val ROUTE_SUBSCRIPTIONS = "subscriptions"
         const val ROUTE_PROFILE = "profile"
