@@ -2,7 +2,7 @@ package com.grebnev.vknewsclient.data.repository
 
 import app.cash.turbine.test
 import com.grebnev.vknewsclient.core.wrappers.ErrorType
-import com.grebnev.vknewsclient.core.wrappers.ResultState
+import com.grebnev.vknewsclient.core.wrappers.ResultStatus
 import com.grebnev.vknewsclient.data.network.ApiService
 import com.grebnev.vknewsclient.data.source.AccessTokenSource
 import com.grebnev.vknewsclient.data.source.FeedPostSource
@@ -33,7 +33,7 @@ class SubscriptionsFeedRepositoryImplTest {
 
     private lateinit var repository: SubscriptionsFeedRepositoryImpl
 
-    private lateinit var nextFromState: MutableStateFlow<String?>
+    private lateinit var nextFromState: MutableStateFlow<Boolean>
     private lateinit var subscriptionsState: MutableStateFlow<Subscription>
     private lateinit var mockFeedPost: FeedPost
 
@@ -48,7 +48,7 @@ class SubscriptionsFeedRepositoryImplTest {
                 coEvery { getAccessToken() } returns "mockToken"
             }
 
-        nextFromState = MutableStateFlow(null)
+        nextFromState = MutableStateFlow(false)
         subscriptionsState =
             MutableStateFlow(
                 Subscription(
@@ -71,7 +71,7 @@ class SubscriptionsFeedRepositoryImplTest {
                 isSubscribed = true,
             )
 
-        coEvery { mockFeedPostSource.nextFromState } returns nextFromState
+        coEvery { mockFeedPostSource.hasNextFromState } returns nextFromState
         coEvery { mockSubscriptionsSource.getSubscriptionsState() } returns subscriptionsState
 
         repository =
@@ -91,8 +91,7 @@ class SubscriptionsFeedRepositoryImplTest {
             coEvery { mockFeedPostSource.loadSubscriptionsFeed(any()) } returns mockFeedPosts
 
             repository.getSubscriptionPosts.test {
-                assertEquals(ResultState.Success(emptyList<FeedPost>()), awaitItem())
-                assertEquals(ResultState.Success(mockFeedPosts), awaitItem())
+                assertEquals(ResultStatus.Success(mockFeedPosts), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
             advanceUntilIdle()
@@ -106,8 +105,7 @@ class SubscriptionsFeedRepositoryImplTest {
             subscriptionsState.value = Subscription()
 
             repository.getSubscriptionPosts.test {
-                assertEquals(ResultState.Success(emptyList<FeedPost>()), awaitItem())
-                assertEquals(ResultState.Empty, awaitItem())
+                assertEquals(ResultStatus.Empty, awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
             advanceUntilIdle()
@@ -120,8 +118,7 @@ class SubscriptionsFeedRepositoryImplTest {
             coEvery { mockFeedPostSource.loadSubscriptionsFeed(any()) } throws throwable
 
             repository.getSubscriptionPosts.test(timeout = 13.seconds) {
-                assertEquals(ResultState.Success(emptyList<FeedPost>()), awaitItem())
-                assertEquals(ResultState.Error(ErrorType.NETWORK_ERROR), awaitItem())
+                assertEquals(ResultStatus.Error(ErrorType.NETWORK_ERROR), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
             advanceUntilIdle()
@@ -139,8 +136,7 @@ class SubscriptionsFeedRepositoryImplTest {
             advanceUntilIdle()
 
             repository.getSubscriptionPosts.test {
-                assertEquals(ResultState.Success(emptyList<FeedPost>()), awaitItem())
-                assertEquals(ResultState.Success(mockFeedPosts), awaitItem())
+                assertEquals(ResultStatus.Success(mockFeedPosts), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
             advanceUntilIdle()
@@ -156,11 +152,10 @@ class SubscriptionsFeedRepositoryImplTest {
             coEvery { mockApiService.ignoreFeedPost(any(), 123L, 1L) } returns Unit
 
             repository.getSubscriptionPosts.test {
-                assertEquals(ResultState.Success(emptyList<FeedPost>()), awaitItem())
-                assertEquals(ResultState.Success(mockFeedPosts), awaitItem())
+                assertEquals(ResultStatus.Success(mockFeedPosts), awaitItem())
                 repository.deletePost(mockFeedPost)
                 advanceUntilIdle()
-                assertEquals(ResultState.Success(emptyList<FeedPost>()), awaitItem())
+                assertEquals(ResultStatus.Success(emptyList<FeedPost>()), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
             advanceUntilIdle()
@@ -176,11 +171,10 @@ class SubscriptionsFeedRepositoryImplTest {
             coEvery { mockLikesSource.changeLikeStatus(mockFeedPost) } returns updatedFeedPost
 
             repository.getSubscriptionPosts.test {
-                assertEquals(ResultState.Success(emptyList<FeedPost>()), awaitItem())
-                assertEquals(ResultState.Success(mockFeedPosts), awaitItem())
+                assertEquals(ResultStatus.Success(mockFeedPosts), awaitItem())
                 repository.changeLikeStatus(mockFeedPost)
                 advanceUntilIdle()
-                assertEquals(ResultState.Success(listOf(updatedFeedPost)), awaitItem())
+                assertEquals(ResultStatus.Success(listOf(updatedFeedPost)), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
             advanceUntilIdle()
@@ -198,8 +192,7 @@ class SubscriptionsFeedRepositoryImplTest {
             advanceUntilIdle()
 
             repository.getSubscriptionPosts.test {
-                assertEquals(ResultState.Success(emptyList<FeedPost>()), awaitItem())
-                assertEquals(ResultState.Success(listOf(updatedFeedPost)), awaitItem())
+                assertEquals(ResultStatus.Success(listOf(updatedFeedPost)), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
             advanceUntilIdle()

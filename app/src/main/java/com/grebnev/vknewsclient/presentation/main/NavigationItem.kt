@@ -20,7 +20,7 @@ sealed class NavigationItem(
     )
 
     data object Favourite : NavigationItem(
-        screen = Screen.Subscriptions,
+        screen = Screen.SubscriptionsFeed,
         titleResId = R.string.navigation_item_subscriptions,
         icon = Icons.Outlined.Favorite,
     )

@@ -45,8 +45,8 @@ fun VkIdAuthScreen(
         ) {
             Image(
                 modifier = Modifier.size(100.dp),
-                painter = painterResource(R.drawable.vk_v2),
-                contentDescription = "Vk logo",
+                painter = painterResource(R.drawable.ic_vk_v2),
+                contentDescription = null,
             )
             Spacer(modifier = Modifier.height(100.dp))
             OneTap(

@@ -3,7 +3,7 @@ package com.grebnev.vknewsclient.data.repository
 import app.cash.turbine.test
 import com.grebnev.vknewsclient.core.handlers.ErrorHandler
 import com.grebnev.vknewsclient.core.wrappers.ErrorType
-import com.grebnev.vknewsclient.core.wrappers.ResultState
+import com.grebnev.vknewsclient.core.wrappers.ResultStatus
 import com.grebnev.vknewsclient.data.mapper.NewsFeedMapper
 import com.grebnev.vknewsclient.data.model.comments.CommentsResponseDto
 import com.grebnev.vknewsclient.data.network.ApiService
@@ -62,7 +62,7 @@ class CommentsPostRepositoryImplTest {
             coEvery { mockMapper.mapResponseToPostComment(any()) } returns emptyList()
 
             repository.getComments(mockFeedPost).test {
-                assertEquals(ResultState.Initial, awaitItem())
+                assertEquals(ResultStatus.Empty, awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
             advanceUntilIdle()
@@ -82,8 +82,7 @@ class CommentsPostRepositoryImplTest {
             coEvery { mockMapper.mapResponseToPostComment(mockCommentsResponse) } returns mockComments
 
             repository.getComments(mockFeedPost).test {
-                assertEquals(ResultState.Initial, awaitItem())
-                assertEquals(ResultState.Success(mockComments), awaitItem())
+                assertEquals(ResultStatus.Success(mockComments), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
             advanceUntilIdle()
@@ -97,8 +96,7 @@ class CommentsPostRepositoryImplTest {
             coEvery { mockMapper.mapResponseToPostComment(mockCommentsResponse) } returns emptyList()
 
             repository.getComments(mockFeedPost).test {
-                assertEquals(ResultState.Initial, awaitItem())
-                assertEquals(ResultState.Empty, awaitItem())
+                assertEquals(ResultStatus.Empty, awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
             advanceUntilIdle()
@@ -116,11 +114,10 @@ class CommentsPostRepositoryImplTest {
             coEvery { mockApiService.loadComments(any(), 123L, 1L) } returns mockCommentsResponse
             coEvery { mockMapper.mapResponseToPostComment(mockCommentsResponse) } returns mockComments
 
+            repository.retry()
+
             repository.getComments(mockFeedPost).test {
-                assertEquals(ResultState.Initial, awaitItem())
-                repository.retry()
-                advanceUntilIdle()
-                assertEquals(ResultState.Success(mockComments), awaitItem())
+                assertEquals(ResultStatus.Success(mockComments), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
             advanceUntilIdle()
@@ -140,8 +137,7 @@ class CommentsPostRepositoryImplTest {
             every { ErrorHandler.getErrorType(exception) } returns errorType
 
             repository.getComments(mockFeedPost).test(timeout = 13.seconds) {
-                assertEquals(ResultState.Initial, awaitItem())
-                assertEquals(ResultState.Error(errorType), awaitItem())
+                assertEquals(ResultStatus.Error(errorType), awaitItem())
             }
             advanceUntilIdle()
 

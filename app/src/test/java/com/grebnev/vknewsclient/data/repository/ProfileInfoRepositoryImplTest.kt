@@ -3,7 +3,7 @@ package com.grebnev.vknewsclient.data.repository
 import app.cash.turbine.test
 import com.grebnev.vknewsclient.core.handlers.ErrorHandler
 import com.grebnev.vknewsclient.core.wrappers.ErrorType
-import com.grebnev.vknewsclient.core.wrappers.ResultState
+import com.grebnev.vknewsclient.core.wrappers.ResultStatus
 import com.grebnev.vknewsclient.data.mapper.ProfileInfoMapper
 import com.grebnev.vknewsclient.data.model.profile.ProfileInfoResponseDto
 import com.grebnev.vknewsclient.data.network.ApiService
@@ -49,19 +49,6 @@ class ProfileInfoRepositoryImplTest {
     }
 
     @Test
-    fun `getProfileInfo should emit Loading initially`() =
-        runTest {
-            coEvery { mockApiService.loadProfileInfo(any()) } returns mockk()
-            coEvery { mockMapper.mapResponseToProfileInfo(any()) } returns mockk()
-
-            repository.getProfileInfo.test {
-                assertEquals(ResultState.Initial, awaitItem())
-                cancelAndIgnoreRemainingEvents()
-            }
-            advanceUntilIdle()
-        }
-
-    @Test
     fun `getProfileInfo should emit Success state when apiService returns valid response`() =
         runTest {
             val mockProfileInfoResponse = mockk<ProfileInfoResponseDto>()
@@ -77,8 +64,7 @@ class ProfileInfoRepositoryImplTest {
             coEvery { mockMapper.mapResponseToProfileInfo(mockProfileInfoResponse) } returns mockProfileInfo
 
             repository.getProfileInfo.test {
-                assertEquals(ResultState.Initial, awaitItem())
-                assertEquals(ResultState.Success(mockProfileInfo), awaitItem())
+                assertEquals(ResultStatus.Success(mockProfileInfo), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
             advanceUntilIdle()
@@ -99,11 +85,10 @@ class ProfileInfoRepositoryImplTest {
             coEvery { mockApiService.loadProfileInfo(any()) } returns mockProfileInfoResponse
             coEvery { mockMapper.mapResponseToProfileInfo(mockProfileInfoResponse) } returns mockProfileInfo
 
+            repository.retry()
+
             repository.getProfileInfo.test {
-                assertEquals(ResultState.Initial, awaitItem())
-                repository.retry()
-                advanceUntilIdle()
-                assertEquals(ResultState.Success(mockProfileInfo), awaitItem())
+                assertEquals(ResultStatus.Success(mockProfileInfo), awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
             advanceUntilIdle()
@@ -123,8 +108,7 @@ class ProfileInfoRepositoryImplTest {
             every { ErrorHandler.getErrorType(exception) } returns errorType
 
             repository.getProfileInfo.test(timeout = 13.seconds) {
-                assertEquals(ResultState.Initial, awaitItem())
-                assertEquals(ResultState.Error(errorType), awaitItem())
+                assertEquals(ResultStatus.Error(errorType), awaitItem())
             }
             advanceUntilIdle()
 

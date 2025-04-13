@@ -5,12 +5,24 @@ import androidx.compose.runtime.remember
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.grebnev.vknewsclient.di.keys.NewsFeedType
 import com.grebnev.vknewsclient.domain.entity.FeedPost
+import com.grebnev.vknewsclient.navigation.Screen.Companion.ROUTE_RECOMMENDATIONS_COMMENTS_FOR_ARGS
+import com.grebnev.vknewsclient.navigation.Screen.Companion.ROUTE_SUBSCRIPTIONS_COMMENTS_FOR_ARGS
 
 class NavigationState(
     val navHostController: NavHostController,
 ) {
-    fun navigateTo(route: String) {
+    fun navigateTo(
+        route: String,
+        currentRoute: String?,
+    ) {
+        if (currentRoute?.contains(ROUTE_RECOMMENDATIONS_COMMENTS_FOR_ARGS) == true ||
+            currentRoute?.contains(ROUTE_SUBSCRIPTIONS_COMMENTS_FOR_ARGS) == true
+        ) {
+            navHostController.popBackStack()
+        }
+
         navHostController.navigate(route) {
             popUpTo(navHostController.graph.findStartDestination().id) {
                 saveState = true
@@ -20,8 +32,16 @@ class NavigationState(
         }
     }
 
-    fun navigateToComments(feedPost: FeedPost) {
-        navHostController.navigate(Screen.Comments.getRouteWithArgs(feedPost))
+    fun navigateToComments(
+        feedPost: FeedPost,
+        newsFeedType: NewsFeedType,
+    ) {
+        when (newsFeedType) {
+            NewsFeedType.RECOMMENDATIONS ->
+                navHostController.navigate(Screen.RecommendationsComments.getRouteWithArgs(feedPost))
+            NewsFeedType.SUBSCRIPTIONS ->
+                navHostController.navigate(Screen.SubscriptionsComments.getRouteWithArgs(feedPost))
+        }
     }
 }
 

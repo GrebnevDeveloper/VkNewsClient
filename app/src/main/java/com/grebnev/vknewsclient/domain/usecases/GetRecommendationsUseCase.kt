@@ -9,4 +9,6 @@ class GetRecommendationsUseCase
         private val repository: RecommendationsFeedRepository,
     ) {
         operator fun invoke() = repository.getRecommendations
+
+        fun close() = repository.close()
     }

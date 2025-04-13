@@ -3,7 +3,7 @@ package com.grebnev.vknewsclient.data.repository
 import com.grebnev.vknewsclient.core.extensions.mergeWith
 import com.grebnev.vknewsclient.core.handlers.ErrorHandler
 import com.grebnev.vknewsclient.core.wrappers.ErrorType
-import com.grebnev.vknewsclient.core.wrappers.ResultState
+import com.grebnev.vknewsclient.core.wrappers.ResultStatus
 import com.grebnev.vknewsclient.data.network.ApiService
 import com.grebnev.vknewsclient.data.source.AccessTokenSource
 import com.grebnev.vknewsclient.data.source.FeedPostSource
@@ -14,14 +14,13 @@ import com.grebnev.vknewsclient.domain.entity.FeedPost
 import com.grebnev.vknewsclient.domain.repository.RecommendationsFeedRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.retryWhen
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -38,23 +37,21 @@ class RecommendationsFeedRepositoryImpl
         private val coroutineScope = CoroutineScope(Dispatchers.Default)
 
         private val nextDataNeededEvents = MutableSharedFlow<Unit>(replay = 1)
-        private val nextFromState = feedPostSource.nextFromState
+        private val hasNextFromState = feedPostSource.hasNextFromState
         private val subscriptionsState = subscriptionsSource.getSubscriptionsState()
 
         private val _feedPosts = mutableListOf<FeedPost>()
         private val feedPosts: List<FeedPost>
             get() = _feedPosts.toList()
 
-        private val refreshedListFlow = MutableSharedFlow<ResultState<List<FeedPost>, ErrorType>>()
+        private val refreshedListFlow = MutableSharedFlow<ResultStatus<List<FeedPost>, ErrorType>>()
 
-        private val recommendationsFeedFlow: Flow<ResultState<List<FeedPost>, ErrorType>> =
+        private val recommendationsFeedFlow: Flow<ResultStatus<List<FeedPost>, ErrorType>> =
             flow {
                 nextDataNeededEvents.emit(Unit)
                 nextDataNeededEvents.collect {
-                    val startFrom = nextFromState.value
-
-                    if (startFrom == null && feedPosts.isNotEmpty()) {
-                        emit(ResultState.Success(feedPosts) as ResultState<List<FeedPost>, ErrorType>)
+                    if (!hasNextFromState.value && feedPosts.isNotEmpty()) {
+                        emit(ResultStatus.Success(feedPosts) as ResultStatus<List<FeedPost>, ErrorType>)
                         return@collect
                     }
 
@@ -70,14 +67,14 @@ class RecommendationsFeedRepositoryImpl
                         }
                     }
 
-                    emit(ResultState.Success(feedPosts))
+                    emit(ResultStatus.Success(feedPosts))
                 }
             }.retryWhen { cause, attempt ->
                 if (attempt <= ErrorHandler.MAX_COUNT_RETRY) {
                     delay(ErrorHandler.RETRY_TIMEOUT)
                 } else {
                     val errorType = ErrorHandler.getErrorType(cause)
-                    emit(ResultState.Error(errorType))
+                    emit(ResultStatus.Error(errorType))
                     delay(ErrorHandler.RETRY_TIMEOUT * 2)
                 }
                 true
@@ -99,19 +96,13 @@ class RecommendationsFeedRepositoryImpl
                         _feedPosts[index] = post.copy(isSubscribed = false)
                     }
                 }
-                refreshedListFlow.emit(ResultState.Success(feedPosts))
+                refreshedListFlow.emit(ResultStatus.Success(feedPosts))
             }
         }
 
-        private val recommendations: StateFlow<ResultState<List<FeedPost>, ErrorType>> =
+        override val getRecommendations: Flow<ResultStatus<List<FeedPost>, ErrorType>> =
             recommendationsFeedFlow
                 .mergeWith(refreshedListFlow)
-                .stateIn(
-                    scope = coroutineScope,
-                    started = SharingStarted.Lazily,
-                    initialValue = ResultState.Success(feedPosts),
-                )
-        override val getRecommendations: StateFlow<ResultState<List<FeedPost>, ErrorType>> = recommendations
 
         override suspend fun loadNextData() {
             nextDataNeededEvents.emit(Unit)
@@ -124,17 +115,23 @@ class RecommendationsFeedRepositoryImpl
                 postId = feedPost.id,
             )
             _feedPosts.remove(feedPost)
-            refreshedListFlow.emit(ResultState.Success(feedPosts))
+            refreshedListFlow.emit(ResultStatus.Success(feedPosts))
         }
 
         override suspend fun changeLikeStatus(feedPost: FeedPost) {
             val newPost = likesSource.changeLikeStatus(feedPost)
             val postIndex = _feedPosts.indexOf(feedPost)
             _feedPosts[postIndex] = newPost
-            refreshedListFlow.emit(ResultState.Success(feedPosts))
+            refreshedListFlow.emit(ResultStatus.Success(feedPosts))
         }
 
         override suspend fun changeSubscriptionStatus(feedPost: FeedPost) {
             subscriptionsSource.changeSubscriptionStatus(feedPost)
+        }
+
+        override fun hasNextDataLoading(): StateFlow<Boolean> = hasNextFromState
+
+        override fun close() {
+            coroutineScope.cancel()
         }
     }

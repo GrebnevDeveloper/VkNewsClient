@@ -1,24 +1,25 @@
 package com.grebnev.vknewsclient.presentation.news.subscriptions
 
 import androidx.lifecycle.viewModelScope
-import com.grebnev.vknewsclient.core.extensions.mergeWith
 import com.grebnev.vknewsclient.core.handlers.ErrorHandler
 import com.grebnev.vknewsclient.core.wrappers.ErrorType
-import com.grebnev.vknewsclient.core.wrappers.ResultState
+import com.grebnev.vknewsclient.core.wrappers.ResultStatus
 import com.grebnev.vknewsclient.di.keys.NewsFeedType
 import com.grebnev.vknewsclient.domain.entity.FeedPost
 import com.grebnev.vknewsclient.domain.usecases.ChangeLikeStatusUseCase
 import com.grebnev.vknewsclient.domain.usecases.ChangeSubscriptionStatusUseCase
 import com.grebnev.vknewsclient.domain.usecases.DeletePostUseCase
 import com.grebnev.vknewsclient.domain.usecases.GetSubscriptionPostsUseCase
+import com.grebnev.vknewsclient.domain.usecases.HasNextDataLoadingUseCase
 import com.grebnev.vknewsclient.domain.usecases.LoadNextDataUseCase
 import com.grebnev.vknewsclient.presentation.base.ErrorMessageProvider
 import com.grebnev.vknewsclient.presentation.news.base.NewsFeedViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -31,6 +32,7 @@ class SubscriptionsFeedViewModel
         private val changeLikeStatusUseCase: ChangeLikeStatusUseCase,
         private val deletePostUseCase: DeletePostUseCase,
         private val changeSubscriptionStatusUseCase: ChangeSubscriptionStatusUseCase,
+        private val hasNextDataLoadingUseCase: HasNextDataLoadingUseCase,
         private val errorMessageProvider: ErrorMessageProvider,
     ) : NewsFeedViewModel() {
         private val exceptionHandler =
@@ -44,57 +46,48 @@ class SubscriptionsFeedViewModel
 
         private val subscriptionsFlow = getSubscriptionPostsUseCase()
 
-        private val loadNextDataFlow = MutableSharedFlow<SubscriptionsScreenState>()
-
         val screenState =
             subscriptionsFlow
                 .map { mapResultStateToScreenState(it) }
-                .onStart { SubscriptionsScreenState.Loading }
-                .mergeWith(loadNextDataFlow)
+                .onStart { emit(SubscriptionsScreenState.Loading) }
                 .catch { throwable ->
                     Timber.e(throwable)
                     SubscriptionsScreenState.Error(throwable.message ?: "Unknown error")
-                }
+                }.stateIn(
+                    scope = viewModelScope,
+                    started = SharingStarted.Lazily,
+                    initialValue = SubscriptionsScreenState.Initial,
+                )
 
         private fun mapResultStateToScreenState(
-            subscriptionState: ResultState<List<FeedPost>, ErrorType>,
+            subscriptionState: ResultStatus<List<FeedPost>, ErrorType>,
         ): SubscriptionsScreenState =
             when (subscriptionState) {
-                is ResultState.Success -> {
+                is ResultStatus.Success -> {
                     val currentFeedPosts = subscriptionState.data
                     if (currentFeedPosts.isNotEmpty()) {
-                        SubscriptionsScreenState.Posts(posts = currentFeedPosts)
+                        SubscriptionsScreenState.Posts(
+                            posts = currentFeedPosts,
+                            nextDataLoading = hasNextDataLoadingUseCase(NewsFeedType.SUBSCRIPTIONS).value,
+                        )
                     } else {
                         SubscriptionsScreenState.Loading
                     }
                 }
 
-                is ResultState.Initial ->
-                    SubscriptionsScreenState.Loading
-
-                is ResultState.Empty ->
+                is ResultStatus.Empty ->
                     SubscriptionsScreenState.NoSubscriptions
 
-                is ResultState.Error ->
+                is ResultStatus.Error ->
                     SubscriptionsScreenState.Error(
                         errorMessageProvider.getErrorMessage(subscriptionState.error),
                     )
             }
 
-        private fun loadNextSubscriptions() {
+        override fun loadNextPosts() {
             viewModelScope.launch(exceptionHandler) {
-                loadNextDataFlow.emit(
-                    SubscriptionsScreenState.Posts(
-                        posts = (subscriptionsFlow.value as ResultState.Success).data,
-                        nextDataLoading = true,
-                    ),
-                )
                 loadNextDataUseCase(NewsFeedType.SUBSCRIPTIONS)
             }
-        }
-
-        override fun loadNextPosts() {
-            loadNextSubscriptions()
         }
 
         override fun changeLikeStatus(feedPost: FeedPost) {
@@ -113,5 +106,10 @@ class SubscriptionsFeedViewModel
             viewModelScope.launch(exceptionHandler) {
                 deletePostUseCase(feedPost, NewsFeedType.SUBSCRIPTIONS)
             }
+        }
+
+        override fun onCleared() {
+            super.onCleared()
+            getSubscriptionPostsUseCase.close()
         }
     }

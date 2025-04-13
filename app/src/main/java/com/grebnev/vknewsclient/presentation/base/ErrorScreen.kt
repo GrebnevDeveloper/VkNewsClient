@@ -25,15 +25,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.grebnev.vknewsclient.R
-import com.grebnev.vknewsclient.ui.theme.DarkBlue
-import com.grebnev.vknewsclient.ui.theme.VkContainer
+import com.grebnev.vknewsclient.ui.theme.vkContainer
 import java.util.Locale
 
 @Composable
 fun ErrorScreenWithRetry(
     retry: () -> Unit = {},
     errorMessage: String,
-    tint: Color = MaterialTheme.colorScheme.onSecondary,
+    tint: Color = MaterialTheme.colorScheme.secondary,
 ) {
     Box(
         modifier =
@@ -59,7 +58,7 @@ fun ErrorScreenWithRetry(
                 onClick = { retry() },
                 colors =
                     ButtonColors(
-                        containerColor = VkContainer,
+                        containerColor = vkContainer,
                         contentColor = Color.White,
                         disabledContentColor = ButtonDefaults.buttonColors().disabledContentColor,
                         disabledContainerColor =
@@ -79,11 +78,12 @@ fun ErrorScreenWithRetry(
 @Composable
 fun ErrorScreenWithLoading(
     errorMessage: String,
-    tint: Color = MaterialTheme.colorScheme.onSecondary,
+    tint: Color = MaterialTheme.colorScheme.secondary,
+    modifier: Modifier = Modifier,
 ) {
     Box(
         modifier =
-            Modifier
+            modifier
                 .fillMaxSize()
                 .padding(16.dp),
         contentAlignment = Alignment.Center,
@@ -95,8 +95,8 @@ fun ErrorScreenWithLoading(
                 errorMessage = errorMessage,
                 tint = tint,
             )
-            Spacer(modifier = Modifier.height(24.dp))
-            CircularProgressIndicator(color = DarkBlue)
+            Spacer(modifier = modifier.height(24.dp))
+            CircularProgressIndicator()
         }
     }
 }
@@ -105,28 +105,27 @@ fun ErrorScreenWithLoading(
 private fun ErrorTextBox(
     errorMessage: String,
     tint: Color,
+    modifier: Modifier = Modifier,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(
-            modifier = Modifier.size(64.dp),
+            modifier = modifier.size(64.dp),
             painter = painterResource(R.drawable.ic_error),
             contentDescription = null,
             tint = tint,
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = modifier.height(16.dp))
         Text(
             text = stringResource(R.string.error_occurred),
             style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSecondary,
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = modifier.height(8.dp))
         Text(
             text = errorMessage,
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSecondary,
             textAlign = TextAlign.Center,
         )
     }

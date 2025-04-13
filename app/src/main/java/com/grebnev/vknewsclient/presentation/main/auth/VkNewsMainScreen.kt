@@ -1,24 +1,16 @@
 package com.grebnev.vknewsclient.presentation.main.auth
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.grebnev.vknewsclient.di.keys.NewsFeedType
 import com.grebnev.vknewsclient.navigation.AppNavGraph
 import com.grebnev.vknewsclient.navigation.NavigationState
 import com.grebnev.vknewsclient.navigation.rememberNavigationState
@@ -31,9 +23,16 @@ import com.grebnev.vknewsclient.presentation.profile.ProfileInfoScreen
 @Composable
 fun VkNewsMainScreen(onLogout: () -> Unit) {
     val navigationState = rememberNavigationState()
+    val backstackState = navigationState.navHostController.currentBackStackEntryAsState()
+    val currentDestination = backstackState.value?.destination
 
     Scaffold(
-        bottomBar = { NavigationBottomBar(navigationState) },
+        bottomBar = {
+            NavigationBottomBar(
+                navigationState = navigationState,
+                currentDestination = currentDestination,
+            )
+        },
         content = { paddingValues ->
             AppNavGraph(
                 navHostController = navigationState.navHostController,
@@ -41,11 +40,14 @@ fun VkNewsMainScreen(onLogout: () -> Unit) {
                     RecommendationsFeedScreen(
                         paddingValues = paddingValues,
                         onCommentClickListener = {
-                            navigationState.navigateToComments(it)
+                            navigationState.navigateToComments(
+                                feedPost = it,
+                                newsFeedType = NewsFeedType.RECOMMENDATIONS,
+                            )
                         },
                     )
                 },
-                commentsScreenContent = { feedPost ->
+                recommendationsCommentsScreenContent = { feedPost ->
                     CommentsScreen(
                         feedPost = feedPost,
                         onBackPressed = {
@@ -57,7 +59,18 @@ fun VkNewsMainScreen(onLogout: () -> Unit) {
                     SubscriptionsFeedScreen(
                         paddingValues = paddingValues,
                         onCommentClickListener = {
-                            navigationState.navigateToComments(it)
+                            navigationState.navigateToComments(
+                                feedPost = it,
+                                newsFeedType = NewsFeedType.SUBSCRIPTIONS,
+                            )
+                        },
+                    )
+                },
+                subscriptionsCommentsScreenContent = { feedPost ->
+                    CommentsScreen(
+                        feedPost = feedPost,
+                        onBackPressed = {
+                            navigationState.navHostController.popBackStack()
                         },
                     )
                 },
@@ -70,27 +83,10 @@ fun VkNewsMainScreen(onLogout: () -> Unit) {
 }
 
 @Composable
-private fun TextCounter(name: String) {
-    var count by rememberSaveable {
-        mutableIntStateOf(0)
-    }
-
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Text(
-            modifier = Modifier.clickable { count++ },
-            text = "$name count: $count",
-        )
-    }
-}
-
-@Composable
-private fun NavigationBottomBar(navigationState: NavigationState) {
-    val navBackStackEntry by navigationState.navHostController.currentBackStackEntryAsState()
-
+private fun NavigationBottomBar(
+    navigationState: NavigationState,
+    currentDestination: NavDestination?,
+) {
     NavigationBar {
         val items =
             listOf(
@@ -100,15 +96,18 @@ private fun NavigationBottomBar(navigationState: NavigationState) {
             )
         items.forEach { item ->
             val selected =
-                navBackStackEntry?.destination?.hierarchy?.any {
-                    it.route == item.screen.route
+                currentDestination?.hierarchy?.any {
+                    it.route?.startsWith(item.screen.route.substringBefore("/")) == true
                 } ?: false
 
             NavigationBarItem(
                 selected = selected,
                 onClick = {
                     if (!selected) {
-                        navigationState.navigateTo(item.screen.route)
+                        navigationState.navigateTo(
+                            route = item.screen.route,
+                            currentRoute = currentDestination?.route,
+                        )
                     }
                 },
                 icon = {

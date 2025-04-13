@@ -1,24 +1,25 @@
 package com.grebnev.vknewsclient.presentation.news.recommendations
 
 import androidx.lifecycle.viewModelScope
-import com.grebnev.vknewsclient.core.extensions.mergeWith
 import com.grebnev.vknewsclient.core.handlers.ErrorHandler
 import com.grebnev.vknewsclient.core.wrappers.ErrorType
-import com.grebnev.vknewsclient.core.wrappers.ResultState
+import com.grebnev.vknewsclient.core.wrappers.ResultStatus
 import com.grebnev.vknewsclient.di.keys.NewsFeedType
 import com.grebnev.vknewsclient.domain.entity.FeedPost
 import com.grebnev.vknewsclient.domain.usecases.ChangeLikeStatusUseCase
 import com.grebnev.vknewsclient.domain.usecases.ChangeSubscriptionStatusUseCase
 import com.grebnev.vknewsclient.domain.usecases.DeletePostUseCase
 import com.grebnev.vknewsclient.domain.usecases.GetRecommendationsUseCase
+import com.grebnev.vknewsclient.domain.usecases.HasNextDataLoadingUseCase
 import com.grebnev.vknewsclient.domain.usecases.LoadNextDataUseCase
 import com.grebnev.vknewsclient.presentation.base.ErrorMessageProvider
 import com.grebnev.vknewsclient.presentation.news.base.NewsFeedViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -30,6 +31,7 @@ class RecommendationsFeedViewModel
         private val loadNextDataUseCase: LoadNextDataUseCase,
         private val changeLikeStatusUseCase: ChangeLikeStatusUseCase,
         private val deletePostUseCase: DeletePostUseCase,
+        private val hasNextDataLoadingUseCase: HasNextDataLoadingUseCase,
         private val changeSubscriptionStatusUseCase: ChangeSubscriptionStatusUseCase,
         private val errorMessageProvider: ErrorMessageProvider,
     ) : NewsFeedViewModel() {
@@ -44,57 +46,48 @@ class RecommendationsFeedViewModel
 
         private val recommendationsFlow = getRecommendationsUseCase()
 
-        private val loadNextDataFlow = MutableSharedFlow<RecommendationsFeedScreenState>()
-
         val screenState =
             recommendationsFlow
                 .map { mapResultStateToScreenState(it) }
-                .onStart { RecommendationsFeedScreenState.Loading }
-                .mergeWith(loadNextDataFlow)
+                .onStart { emit(RecommendationsFeedScreenState.Loading) }
                 .catch { cause ->
                     RecommendationsFeedScreenState.Error(cause.message ?: "Unknown error")
-                }
+                }.stateIn(
+                    scope = viewModelScope,
+                    started = SharingStarted.Lazily,
+                    initialValue = RecommendationsFeedScreenState.Initial,
+                )
 
         private fun mapResultStateToScreenState(
-            recommendationsState: ResultState<List<FeedPost>, ErrorType>,
+            recommendationsState: ResultStatus<List<FeedPost>, ErrorType>,
         ): RecommendationsFeedScreenState =
             when (recommendationsState) {
-                is ResultState.Error -> {
+                is ResultStatus.Error -> {
                     RecommendationsFeedScreenState.Error(
                         errorMessageProvider.getErrorMessage(recommendationsState.error),
                     )
                 }
 
-                is ResultState.Empty ->
+                is ResultStatus.Empty ->
                     RecommendationsFeedScreenState.NoRecommendations
 
-                is ResultState.Initial ->
-                    RecommendationsFeedScreenState.Loading
-
-                is ResultState.Success -> {
+                is ResultStatus.Success -> {
                     val currentFeedPost = recommendationsState.data
                     if (currentFeedPost.isNotEmpty()) {
-                        RecommendationsFeedScreenState.Posts(currentFeedPost)
+                        RecommendationsFeedScreenState.Posts(
+                            posts = currentFeedPost,
+                            nextDataLoading = hasNextDataLoadingUseCase(NewsFeedType.RECOMMENDATIONS).value,
+                        )
                     } else {
                         RecommendationsFeedScreenState.Loading
                     }
                 }
             }
 
-        private fun loadNextRecommendations() {
+        override fun loadNextPosts() {
             viewModelScope.launch(exceptionHandler) {
-                loadNextDataFlow.emit(
-                    RecommendationsFeedScreenState.Posts(
-                        posts = (recommendationsFlow.value as ResultState.Success).data,
-                        nextDataLoading = true,
-                    ),
-                )
                 loadNextDataUseCase(NewsFeedType.RECOMMENDATIONS)
             }
-        }
-
-        override fun loadNextPosts() {
-            loadNextRecommendations()
         }
 
         override fun changeLikeStatus(feedPost: FeedPost) {
@@ -113,5 +106,10 @@ class RecommendationsFeedViewModel
             viewModelScope.launch(exceptionHandler) {
                 deletePostUseCase(feedPost, NewsFeedType.RECOMMENDATIONS)
             }
+        }
+
+        override fun onCleared() {
+            super.onCleared()
+            getRecommendationsUseCase.close()
         }
     }

@@ -3,7 +3,7 @@ package com.grebnev.vknewsclient.data.repository
 import com.grebnev.vknewsclient.core.extensions.mergeWith
 import com.grebnev.vknewsclient.core.handlers.ErrorHandler
 import com.grebnev.vknewsclient.core.wrappers.ErrorType
-import com.grebnev.vknewsclient.core.wrappers.ResultState
+import com.grebnev.vknewsclient.core.wrappers.ResultStatus
 import com.grebnev.vknewsclient.data.network.ApiService
 import com.grebnev.vknewsclient.data.source.AccessTokenSource
 import com.grebnev.vknewsclient.data.source.FeedPostSource
@@ -15,14 +15,13 @@ import com.grebnev.vknewsclient.domain.repository.SubscriptionsFeedRepository
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.retryWhen
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -45,29 +44,27 @@ class SubscriptionsFeedRepositoryImpl
         private val coroutineScope = CoroutineScope(Dispatchers.Default + exceptionHandler)
 
         private val nextDataNeededEvents = MutableSharedFlow<Unit>(replay = 1)
-        private val nextFromState = feedPostSource.nextFromState
+        private val hasNextFromState = feedPostSource.hasNextFromState
         private val subscriptionsState = subscriptionsSource.getSubscriptionsState()
 
         private val _feedPosts = mutableListOf<FeedPost>()
         private val feedPosts: List<FeedPost>
             get() = _feedPosts.toList()
 
-        private val refreshedListFlow = MutableSharedFlow<ResultState<List<FeedPost>, ErrorType>>()
+        private val refreshedListFlow = MutableSharedFlow<ResultStatus<List<FeedPost>, ErrorType>>()
 
-        private val subscriptionsFeedFlow: Flow<ResultState<List<FeedPost>, ErrorType>> =
+        private val subscriptionsFeedFlow: Flow<ResultStatus<List<FeedPost>, ErrorType>> =
             flow {
                 nextDataNeededEvents.emit(Unit)
                 nextDataNeededEvents.collect {
                     val sourceIds = subscriptionsState.value.sourceIds
                     if (sourceIds.isEmpty()) {
-                        emit(ResultState.Empty as ResultState<List<FeedPost>, ErrorType>)
+                        emit(ResultStatus.Empty as ResultStatus<List<FeedPost>, ErrorType>)
                         return@collect
                     }
 
-                    val startFrom = nextFromState.value
-
-                    if (startFrom == null && feedPosts.isNotEmpty()) {
-                        emit(ResultState.Success(feedPosts))
+                    if (!hasNextFromState.value && feedPosts.isNotEmpty()) {
+                        emit(ResultStatus.Success(feedPosts))
                         return@collect
                     }
 
@@ -75,14 +72,14 @@ class SubscriptionsFeedRepositoryImpl
 
                     _feedPosts.addAll(posts.map { it.copy(isSubscribed = true) })
 
-                    emit(ResultState.Success(feedPosts))
+                    emit(ResultStatus.Success(feedPosts))
                 }
             }.retryWhen { cause, attempt ->
                 if (attempt <= ErrorHandler.MAX_COUNT_RETRY) {
                     delay(ErrorHandler.RETRY_TIMEOUT)
                 } else {
                     val errorType = ErrorHandler.getErrorType(cause)
-                    emit(ResultState.Error(errorType))
+                    emit(ResultStatus.Error(errorType))
                     delay(ErrorHandler.RETRY_TIMEOUT * 2)
                 }
                 true
@@ -109,24 +106,16 @@ class SubscriptionsFeedRepositoryImpl
                 }
                 deletePostsAfterUnsubscribing()
                 if (sourceIds.isEmpty()) {
-                    refreshedListFlow.emit(ResultState.Empty)
+                    refreshedListFlow.emit(ResultStatus.Empty)
                 } else {
-                    refreshedListFlow.emit(ResultState.Success(feedPosts))
+                    refreshedListFlow.emit(ResultStatus.Success(feedPosts))
                 }
             }
         }
 
-        private val subscriptions: StateFlow<ResultState<List<FeedPost>, ErrorType>> =
+        override val getSubscriptionPosts: Flow<ResultStatus<List<FeedPost>, ErrorType>> =
             subscriptionsFeedFlow
                 .mergeWith(refreshedListFlow)
-                .stateIn(
-                    scope = coroutineScope,
-                    started = SharingStarted.Lazily,
-                    initialValue = ResultState.Success(feedPosts),
-                )
-
-        override val getSubscriptionPosts: StateFlow<ResultState<List<FeedPost>, ErrorType>> =
-            subscriptions
 
         override suspend fun loadNextData() {
             nextDataNeededEvents.emit(Unit)
@@ -139,14 +128,14 @@ class SubscriptionsFeedRepositoryImpl
                 postId = feedPost.id,
             )
             _feedPosts.remove(feedPost)
-            refreshedListFlow.emit(ResultState.Success(feedPosts))
+            refreshedListFlow.emit(ResultStatus.Success(feedPosts))
         }
 
         override suspend fun changeLikeStatus(feedPost: FeedPost) {
             val newPost = likesSource.changeLikeStatus(feedPost)
             val postIndex = _feedPosts.indexOf(feedPost)
             _feedPosts[postIndex] = newPost
-            refreshedListFlow.emit(ResultState.Success(feedPosts))
+            refreshedListFlow.emit(ResultStatus.Success(feedPosts))
         }
 
         override suspend fun changeSubscriptionStatus(feedPost: FeedPost) {
@@ -156,5 +145,11 @@ class SubscriptionsFeedRepositoryImpl
         private fun deletePostsAfterUnsubscribing() {
             val deletedPosts = _feedPosts.filter { !it.isSubscribed }
             _feedPosts.removeAll(deletedPosts)
+        }
+
+        override fun hasNextDataLoading(): StateFlow<Boolean> = hasNextFromState
+
+        override fun close() {
+            coroutineScope.cancel()
         }
     }
