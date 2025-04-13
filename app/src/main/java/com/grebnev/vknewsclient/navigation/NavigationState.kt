@@ -5,6 +5,7 @@ import androidx.compose.runtime.remember
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.grebnev.vknewsclient.di.keys.NewsFeedType
 import com.grebnev.vknewsclient.domain.entity.FeedPost
 
 class NavigationState(
@@ -20,8 +21,16 @@ class NavigationState(
         }
     }
 
-    fun navigateToComments(feedPost: FeedPost) {
-        navHostController.navigate(Screen.Comments.getRouteWithArgs(feedPost))
+    fun navigateToComments(
+        feedPost: FeedPost,
+        newsFeedType: NewsFeedType,
+    ) {
+        when (newsFeedType) {
+            NewsFeedType.RECOMMENDATIONS ->
+                navHostController.navigate(Screen.RecommendationsComments.getRouteWithArgs(feedPost))
+            NewsFeedType.SUBSCRIPTIONS ->
+                navHostController.navigate(Screen.SubscriptionsComments.getRouteWithArgs(feedPost))
+        }
     }
 }
 

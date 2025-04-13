@@ -10,8 +10,9 @@ import com.grebnev.vknewsclient.domain.entity.FeedPost
 fun AppNavGraph(
     navHostController: NavHostController,
     recommendationsFeedScreenContent: @Composable () -> Unit,
-    commentsScreenContent: @Composable (FeedPost) -> Unit,
+    recommendationsCommentsScreenContent: @Composable (FeedPost) -> Unit,
     subscriptionsFeedScreenContent: @Composable () -> Unit,
+    subscriptionsCommentsScreenContent: @Composable (FeedPost) -> Unit,
     profileScreenContent: @Composable () -> Unit,
 ) {
     NavHost(
@@ -20,11 +21,11 @@ fun AppNavGraph(
     ) {
         recommendationsScreenNavGraph(
             recommendationsFeedScreenContent = recommendationsFeedScreenContent,
-            commentsScreenContent = commentsScreenContent,
+            commentsScreenContent = recommendationsCommentsScreenContent,
         )
         subscriptionsScreenNavGraph(
             subscriptionsFeedScreenContent = subscriptionsFeedScreenContent,
-            commentsScreenContent = commentsScreenContent,
+            commentsScreenContent = subscriptionsCommentsScreenContent,
         )
         composable(Screen.Profile.route) {
             profileScreenContent()

@@ -21,7 +21,7 @@ fun NavGraphBuilder.recommendationsScreenNavGraph(
             recommendationsFeedScreenContent()
         }
         composable(
-            route = Screen.Comments.route,
+            route = Screen.RecommendationsComments.route,
             arguments = listOf(navArgument(Screen.KEY_FEED_POST) { type = NavType.StringType }),
         ) {
             val feedPostJson = it.arguments?.getString(Screen.KEY_FEED_POST) ?: ""
@@ -43,7 +43,7 @@ fun NavGraphBuilder.subscriptionsScreenNavGraph(
             subscriptionsFeedScreenContent()
         }
         composable(
-            route = Screen.Comments.route,
+            route = Screen.SubscriptionsComments.route,
             arguments = listOf(navArgument(Screen.KEY_FEED_POST) { type = NavType.StringType }),
         ) {
             val feedPostJson = it.arguments?.getString(Screen.KEY_FEED_POST) ?: ""
