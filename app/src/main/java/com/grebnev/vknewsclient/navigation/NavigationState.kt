@@ -7,11 +7,22 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.grebnev.vknewsclient.di.keys.NewsFeedType
 import com.grebnev.vknewsclient.domain.entity.FeedPost
+import com.grebnev.vknewsclient.navigation.Screen.Companion.ROUTE_RECOMMENDATIONS_COMMENTS_FOR_ARGS
+import com.grebnev.vknewsclient.navigation.Screen.Companion.ROUTE_SUBSCRIPTIONS_COMMENTS_FOR_ARGS
 
 class NavigationState(
     val navHostController: NavHostController,
 ) {
-    fun navigateTo(route: String) {
+    fun navigateTo(
+        route: String,
+        currentRoute: String?,
+    ) {
+        if (currentRoute?.contains(ROUTE_RECOMMENDATIONS_COMMENTS_FOR_ARGS) == true ||
+            currentRoute?.contains(ROUTE_SUBSCRIPTIONS_COMMENTS_FOR_ARGS) == true
+        ) {
+            navHostController.popBackStack()
+        }
+
         navHostController.navigate(route) {
             popUpTo(navHostController.graph.findStartDestination().id) {
                 saveState = true

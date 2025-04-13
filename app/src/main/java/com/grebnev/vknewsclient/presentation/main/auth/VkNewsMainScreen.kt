@@ -104,7 +104,10 @@ private fun NavigationBottomBar(
                 selected = selected,
                 onClick = {
                     if (!selected) {
-                        navigationState.navigateTo(item.screen.route)
+                        navigationState.navigateTo(
+                            route = item.screen.route,
+                            currentRoute = currentDestination?.route,
+                        )
                     }
                 },
                 icon = {
