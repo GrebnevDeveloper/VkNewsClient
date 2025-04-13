@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">VkNewsClient</string>
+    <string name="navigation_item_recommendations">Рекомендации</string>
+    <string name="navigation_item_subscriptions">Подписки</string>
+    <string name="navigation_item_profile">Профиль</string>
+    <string name="comments">Комментарии</string>
+    <string name="recommendations">Рекомендации</string>
+    <string name="subscriptions">Подписки</string>
+    <string name="logout">Выйти из аккаунта</string>
+    <string name="network_error_message">Проблемы с сетью. Проверьте подключение к интернету.</string>
+    <string name="unknown_error_message">Произошла неизвестная ошибка при выполнении запроса.</string>
+    <string name="error_occurred">Произошла ошибка</string>
+    <string name="retry">Повторить</string>
+    <string name="no_comments">Нет комментариев к записи</string>
+    <string name="no_subscriptions">Нет новостей от подписок</string>
+    <string name="no_recommendations">Нет рекомендаций</string>
+    <string name="no_post_to_display">Нет записей для отображения</string>
+    <string name="subscribe">Подписаться</string>
+    <string name="unsubscribe">Отписаться</string>
+</resources>
