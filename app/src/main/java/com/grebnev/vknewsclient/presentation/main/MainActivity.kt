@@ -7,9 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.collectAsState
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.grebnev.vknewsclient.R
 import com.grebnev.vknewsclient.presentation.getApplicationComponent
 import com.grebnev.vknewsclient.presentation.main.auth.AuthState
 import com.grebnev.vknewsclient.presentation.main.auth.VkIdAuthScreen
@@ -19,14 +17,8 @@ import timber.log.Timber
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(R.style.Theme_VkNewsClient)
-
-        requestWindowFeature(Window.FEATURE_NO_TITLE)
-
         super.onCreate(savedInstanceState)
-
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        window.setBackgroundDrawableResource(android.R.color.transparent)
+        requestWindowFeature(Window.FEATURE_NO_TITLE)
 
         enableEdgeToEdge()
         installSplashScreen()
