@@ -8,6 +8,8 @@ import com.grebnev.vknewsclient.domain.entity.FeedPost
 import com.grebnev.vknewsclient.domain.entity.Subscription
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -16,6 +18,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 
 @ApplicationScope
@@ -26,11 +30,14 @@ class SubscriptionsStatusSource
         private val mapper: NewsFeedMapper,
         private val accessToken: AccessTokenSource,
     ) {
+        private val coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+
+        private val subscriptionMutex = Mutex()
         private val refreshSubscriptionsNeededEvents = MutableSharedFlow<Unit>(replay = 1)
         private val subscriptionState =
             loadSubscribes()
                 .stateIn(
-                    scope = CoroutineScope(Dispatchers.Default),
+                    scope = coroutineScope,
                     started = SharingStarted.Lazily,
                     initialValue = Subscription(),
                 )
@@ -55,28 +62,34 @@ class SubscriptionsStatusSource
             }
 
         suspend fun changeSubscriptionStatus(feedPost: FeedPost) {
-            val currentSubscription = subscriptionState.value
-            val newSourceIds = currentSubscription.sourceIds.toMutableSet()
-            if (!feedPost.isSubscribed) {
-                newSourceIds.add(feedPost.communityId)
-            } else {
-                newSourceIds.remove(feedPost.communityId)
-            }
+            subscriptionMutex.withLock {
+                val currentSubscription = subscriptionState.value
+                val newSourceIds = currentSubscription.sourceIds.toMutableSet()
+                if (!feedPost.isSubscribed) {
+                    newSourceIds.add(feedPost.communityId)
+                } else {
+                    newSourceIds.remove(feedPost.communityId)
+                }
 
-            if (newSourceIds.isNotEmpty()) {
-                apiService.saveListSubscriptions(
-                    token = accessToken.getAccessToken(),
-                    listId = currentSubscription.id,
-                    title = currentSubscription.title,
-                    sourceIds = newSourceIds.joinToString(),
-                )
-            } else {
-                apiService.deleteListSubscriptions(
-                    token = accessToken.getAccessToken(),
-                    listId = currentSubscription.id,
-                )
-            }
+                if (newSourceIds.isNotEmpty()) {
+                    apiService.saveListSubscriptions(
+                        token = accessToken.getAccessToken(),
+                        listId = currentSubscription.id,
+                        title = currentSubscription.title,
+                        sourceIds = newSourceIds.joinToString(),
+                    )
+                } else {
+                    apiService.deleteListSubscriptions(
+                        token = accessToken.getAccessToken(),
+                        listId = currentSubscription.id,
+                    )
+                }
 
-            refreshSubscriptionsNeededEvents.emit(Unit)
+                refreshSubscriptionsNeededEvents.emit(Unit)
+            }
+        }
+
+        fun close() {
+            coroutineScope.cancel()
         }
     }
